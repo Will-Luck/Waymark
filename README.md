@@ -242,6 +242,8 @@ Waymark started as a status page I built for my own homelab, to see all of
 my projects in one place. I adapted it so anyone with Gitea, Forgejo or
 GitHub can run it, in case others find it useful too.
 
+Built with the help of Claude, which did pretty much all of the leg work.
+
 ## Licence
 
 MIT. Made by Will Luck. See [LICENSE](LICENSE).
