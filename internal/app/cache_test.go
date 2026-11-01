@@ -183,8 +183,9 @@ func TestNoSourceIgnoresCache(t *testing.T) {
 	if n := fileIdeas(got); n != 0 {
 		t.Errorf("file ideas = %d, want none", n)
 	}
-	if st := registryStatus(t, got); !st.OK {
-		t.Errorf("registry status = %+v, want OK", st)
+	// Nor is there a source row for the files: no file is read.
+	if _, ok := sourceStatus(got, "registry"); ok {
+		t.Errorf("sources = %v, want no registry source", sourceNamesOf(got))
 	}
 }
 

@@ -122,7 +122,7 @@ site:
 | `include_private` | bool | `false` (or `WAYMARK_INCLUDE_PRIVATE`) | `false` drops private repos everywhere: projects, needs-you, ideas, events, the ship log and the map. `true` shows them like any other repo |
 
 The page has no login, so private repos are off unless you turn them on.
-With `true`, everything the README's [privacy list](../README.md#privacy-first)
+With `true`, everything the [privacy list](https://github.com/Will-Luck/waymark/wiki/Privacy-and-Security#there-is-no-login)
 names shows for private repos too (names, issue titles, commit messages),
 to anyone who can reach the page: put a login in front of it first.
 
@@ -158,7 +158,7 @@ release).
 | `forges[].id` | string | required | Your name for the forge. The projects file uses it as a repo key (`- gitea: acme/tool`), and it names the forge's source status. Unique, and not one of `registry`, `heatmap`, `ideas`, `docker`, `probes`, `notes`, `fdroid` |
 | `forges[].type` | string | required | `gitea`, `forgejo` (the same API) or `github`. The page names the forge by it (Gitea, Forgejo, GitHub), or Codeberg for one on `codeberg.org` |
 | `forges[].url` | string | required for `gitea`; `https://api.github.com` for `github` | Gitea or Forgejo: the site address, such as `https://git.example.com` (Waymark adds `/api/v1`, so leave it off). GitHub: the API root. An `http://` or `https://` address with no user name or password (the token goes in `token`). GitHub Enterprise Server is not supported yet: Waymark sends GraphQL to `<url>/graphql`, which it serves elsewhere |
-| `forges[].token` | string | none | A read-only token (see the README for scopes). **Gitea and Forgejo** need one: without it their API answers 401 and the forge's source shows as failing. **GitHub** runs without one but lists nothing: only repos the projects file names are read, and only lightly (the repo, its open issues and its latest release; 60 requests an hour). Its source stays OK, and says why when that leaves `owners` unlisted or nothing to read. A `${VAR}` here that is empty or not set is warned of at start |
+| `forges[].token` | string | none | A read-only token (see [Tokens and scopes](https://github.com/Will-Luck/waymark/wiki/Installation#tokens-and-scopes)). **Gitea and Forgejo** need one: without it their API answers 401 and the forge's source shows as failing. **GitHub** runs without one but lists nothing: only repos the projects file names are read, and only lightly (the repo, its open issues and its latest release; 60 requests an hour). Its source stays OK, and says why when that leaves `owners` unlisted or nothing to read. A `${VAR}` here that is empty or not set is warned of at start |
 | `forges[].owners` | list of strings | `[]` | The users and orgs whose repos are tracked; each repo becomes a project unless the projects file claims or hides it. Empty means the token user's own repos only, on every forge type: not repos the user collaborates on, and not its organisations' repos. List an org or another user to track theirs (and list yourself too, to keep your own). An owner with no repos the token can see is logged once. A repo the projects file names is read even when its owner is not listed |
 | `forges[].heatmap` | bool | `true` | Add the token user's contribution days to the ship log's year of commits: Gitea's heatmap, or GitHub's contribution calendar (needs a token). It counts all of that user's activity, private repos included, whatever `include_private` says: a number per day, no repo names. Turn it off for a forge that mirrors another, or mirrored commits count twice |
 
@@ -181,14 +181,17 @@ tags, releases, open issues and PRs (with assignees and review requests),
 commits from the last 84 days and Actions runs, again when the repo changes
 and at least every 30 minutes; its `CHANGELOG.md` and plan files when the
 repo changes and at least every 6 hours. A mirror gets three reads every 30
-minutes: the repo, its open issues and its latest release.
+minutes: the repo, its open issues and its latest release (and, when a rate
+limit stopped those reads, again within a minute of the limit's end).
 
 A refresh (Refresh in the page's command palette, or `POST /api/refresh`) lists every forge
 again; a Gitea or Forgejo forge then reads every primary's detail again,
 and a GitHub forge only the repos whose list entry changed or whose last
 read failed. A forge that answers that its rate limit is spent (GitHub) is
-asked nothing until the reset it names, at most an hour, and its status
-shows that time meanwhile.
+asked nothing until the reset it names, at most an hour. Its status, and
+the row of any other read the limit stops (the heatmap, the filed-idea
+search, a projects or ideas file in a repo on it), names the time after
+which it will be asked again.
 
 ### projects
 
@@ -242,7 +245,7 @@ token (it uses the issue search).
 ### needs_you
 
 The forge rules for the **Needs you** list. The other rules (Deploy, Fix,
-stale PRs, Confirm) are always on; see the README.
+stale PRs, Confirm) are always on; see [Needs you](https://github.com/Will-Luck/waymark/wiki/Features#needs-you).
 
 | Key | Type | Default | What it does |
 |---|---|---|---|

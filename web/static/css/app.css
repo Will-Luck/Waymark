@@ -922,11 +922,26 @@
   .idea-proj:hover span:last-child { color: var(--text); text-decoration: underline; }
   .idea-pitch { font-size: 0.94rem; }
   .idea-foot { margin-block-start: auto; padding-block-start: 0.3rem; display: flex; }
+  .idea.picked { outline: 3px solid var(--kc, var(--accent)); outline-offset: 3px; }
+  .picked-tag {
+    position: absolute;
+    inset-block-start: -0.8rem;
+    inset-inline-end: 1rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.08rem 0.6rem 0.08rem 0.45rem;
+    border-radius: 999px;
+    background: var(--kc, var(--accent));
+    color: var(--on-accent);
+    font-size: 0.76rem;
+    font-weight: 700;
+  }
   .idea.surprise { animation: surprise 1.8s var(--ease); }
   @keyframes surprise {
-    0% { outline: 3px solid var(--kc); outline-offset: 10px; scale: 1.035; }
-    35% { outline: 3px solid var(--kc); outline-offset: 3px; scale: 1.02; }
-    100% { outline: 3px solid transparent; outline-offset: 3px; scale: 1; }
+    0% { outline-offset: 10px; scale: 1.035; }
+    35% { outline-offset: 3px; scale: 1.02; }
+    100% { outline-offset: 3px; scale: 1; }
   }
   body:has(#k-quick-win:checked) .idea:not([data-kind="quick-win"]),
   body:has(#k-bold:checked) .idea:not([data-kind="bold"]),

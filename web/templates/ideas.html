@@ -2,13 +2,14 @@
 <div class="wrap" data-ideas>
   <header class="page-head">
     <h1 class="page-title">{{icon "lightbulb"}}Ideas <span class="count">{{num $v.Total}}</span></h1>
-    {{if $v.FromFile}}<p class="lead">Ideas from the roundup{{with $v.Roundup}} on <b>{{.}}</b>{{end}}{{if $v.FromLabels}} and from issues labelled {{with $v.Labels}}{{.}}{{else}}as ideas{{end}}{{end}}. File one as an issue to make it real.</p>
+    {{if $v.FromFile}}<p class="lead">Ideas from the ideas file{{with $v.Roundup}} (updated <b>{{.}}</b>){{end}}{{if $v.FromLabels}} and from issues labelled {{with $v.Labels}}{{.}}{{else}}as ideas{{end}}{{end}}. File one as an issue to make it real.</p>
     {{- else if $v.FromLabels}}<p class="lead">From issues labelled {{with $v.Labels}}{{.}}{{else}}as ideas{{end}}.</p>{{end}}
-    <ul class="kind-counts" aria-label="Ideas by kind">
+    {{if $v.Ideas}}<ul class="kind-counts" aria-label="Ideas by kind">
       {{range $v.Kinds}}<li class="k-{{.Key}}"><span class="kc-ic">{{icon .Icon}}</span><span class="kc-num">{{.Count}}</span><span class="kc-label">{{.Label}}</span></li>{{end}}
       {{if $v.FromFile}}<li class="k-filed"><span class="kc-ic">{{icon "circle-check"}}</span><span class="kc-num">{{$v.Filed}}</span><span class="kc-label">Already filed</span></li>{{end}}
-    </ul>
+    </ul>{{end}}
   </header>
+{{if $v.Ideas}}
 
   <div class="idea-tools">
     <fieldset class="filter">
@@ -35,5 +36,8 @@
 
   <p class="ideas-empty" data-ideas-empty>{{icon "search-x"}}<span><b>No ideas match these filters.</b> <a href="/ideas">Show all ideas</a></span></p>
   <div class="idea-grid">{{range $v.Ideas}}{{template "idea" (dict "It" . "Show" true)}}{{end}}</div>
+{{else}}
+  <p class="ideas-empty show">{{icon "lightbulb"}}<span><b>No ideas yet.</b>{{if $v.FromFile}} An idea added to the ideas file{{with $v.Labels}}, or an open issue labelled {{.}},{{end}} shows here.{{else}}{{with $v.Labels}} An open issue labelled {{.}} shows here.{{end}}{{end}}</span></p>
+{{end}}
 </div>
 {{end}}

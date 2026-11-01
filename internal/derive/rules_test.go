@@ -146,7 +146,7 @@ func TestTier(t *testing.T) {
 		tier   model.Tier
 		reason string
 	}{
-		{"retired beats everything", TierInput{Retired: true, Hold: hold, LastCommit: days(1), Running: true}, model.TierArchived, "Retired in the registry"},
+		{"retired beats everything", TierInput{Retired: true, Hold: hold, LastCommit: days(1), Running: true}, model.TierArchived, "Retired in the projects file"},
 		{"archived repo", TierInput{RepoArchived: true, LastCommit: days(1), Forge: "Gitea"}, model.TierArchived, "Archived on Gitea"},
 		{"hold beats active", TierInput{Hold: hold, LastCommit: days(1)}, model.TierHold, "Parked since 7 Aug: Waiting on a decision"},
 		{"frozen", TierInput{Hold: frozen}, model.TierHold, "Frozen since 29 May: Production is frozen"},

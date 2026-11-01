@@ -203,7 +203,7 @@ func (s *server) ideas(w http.ResponseWriter, r *http.Request) {
 	}
 	p := s.newPage(r, d, "ideas", "Ideas")
 	v := d.ideas()
-	p.Desc = "Feature ideas from the roundup, ready to file as issues."
+	p.Desc = "Feature ideas from the ideas file, ready to file as issues."
 	if !v.FromFile {
 		p.Desc = "Feature ideas from labelled issues."
 	}

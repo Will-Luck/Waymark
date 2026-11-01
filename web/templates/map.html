@@ -2,10 +2,10 @@
 <div class="map-page">
   <header class="wrap page-head">
     <h1 class="page-title">{{icon "orbit"}}Map</h1>
-    <p class="lead">Every project as a star. <b>Colour and the corner badge show its tier</b>; the icon inside is the project. Size shows the last 12 weeks of commits, lines are relations. <span hidden data-js-show>Drag a star to move it. Select one to open the project.</span></p>
+    <p class="lead">Every project as a star. <b>Colour and the corner badge show its state</b>; the icon inside is the project. Size shows the last 12 weeks of commits, lines are relations. <span hidden data-js-show>Drag a star to move it. Select one to open the project.</span></p>
   </header>
   <aside class="legend wrap" aria-label="Legend">
-      <h2 class="legend-h">Tiers</h2>
+      <h2 class="legend-h">States</h2>
       <ul>
         {{range tiers}}<li class="{{tierClass .}}"><span class="legend-dot" aria-hidden="true">{{icon (tierIcon .)}}</span>{{tierLabel .}}</li>{{end}}
       </ul>

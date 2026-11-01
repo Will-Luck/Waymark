@@ -429,15 +429,16 @@ type ideasView struct {
 	// idea is an issue itself, so it is in neither count.
 	Filed   int
 	Roundup string
-	// FromFile: the ideas come from an ideas file (the roundup); FromLabels:
-	// from issues labelled Labels ("idea or enhancement").
+	// FromFile: an ideas file (the roundup) is configured or gave ideas;
+	// FromLabels: ideas came from issues labelled Labels ("idea or
+	// enhancement").
 	FromFile, FromLabels bool
 	Labels               string
 }
 
 func (d *derived) ideas() ideasView {
 	site := d.site
-	v := ideasView{Total: len(site.Ideas), FromFile: site.RoundupDate != "", Labels: orList(site.Meta.IdeaLabels)}
+	v := ideasView{Total: len(site.Ideas), FromFile: site.Meta.IdeasFile || site.RoundupDate != "", Labels: orList(site.Meta.IdeaLabels)}
 	if t, err := time.Parse("2006-01-02", site.RoundupDate); err == nil {
 		v.Roundup = t.Format("2 Jan 2006")
 	} else {
@@ -993,8 +994,12 @@ func buildSearch(site *model.Site) []byte {
 		searchCommand{ID: "go-map", Label: "Map", Icon: "orbit", URL: "/map"},
 		searchCommand{ID: "theme", Label: "Toggle theme", Icon: "sun", Action: "theme"},
 		searchCommand{ID: "refresh", Label: "Refresh now", Icon: "refresh-cw", Action: "refresh"},
-		searchCommand{ID: "surprise", Label: "Surprise me", Icon: "shuffle", Action: "surprise"},
 	)
+	// Surprise me picks an idea on the Ideas page: with none there is nothing
+	// to pick, and with no Ideas page it would lead to a 404.
+	if len(ix.Ideas) > 0 {
+		ix.Commands = append(ix.Commands, searchCommand{ID: "surprise", Label: "Surprise me", Icon: "shuffle", Action: "surprise"})
+	}
 	b, _ := json.Marshal(ix)
 	return b
 }

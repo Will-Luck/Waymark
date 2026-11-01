@@ -1,6 +1,6 @@
 // Ideas page: the project select (JS only; kind and size filters are pure
 // CSS), the empty state for the select, and "Surprise me".
-import { motionOK } from "./util.js";
+import { el, icon, motionOK } from "./util.js";
 
 const root = document.querySelector("[data-ideas]");
 const cards = [...document.querySelectorAll(".idea-grid .idea")];
@@ -30,13 +30,29 @@ function showAll() {
   updateCount();
 }
 
+// The surprise pick keeps its outline and label until the next pick, Esc or
+// a filter change, so it is easy to find again after the scroll.
+let picked = null;
+
+function clearPick() {
+  if (!picked) return;
+  picked.classList.remove("picked", "surprise");
+  picked.querySelector(".picked-tag")?.remove();
+  picked = null;
+}
+
 function surprise() {
   const pool = cards.filter(visible);
   if (!pool.length) return;
-  const pick = pool[Math.floor(Math.random() * pool.length)];
+  // Never the same card twice in a row when there is another to pick.
+  const choices = pool.length > 1 ? pool.filter((c) => c !== picked) : pool;
+  const pick = choices[Math.floor(Math.random() * choices.length)];
+  clearPick();
+  picked = pick;
+  pick.classList.add("picked");
+  pick.prepend(el("span", { class: "picked-tag" }, icon("shuffle"), "Surprise pick"));
   pick.scrollIntoView({ behavior: motionOK() ? "smooth" : "auto", block: "center" });
   pick.focus({ preventScroll: true });
-  pick.classList.remove("surprise");
   if (motionOK()) {
     void pick.offsetWidth;
     pick.classList.add("surprise");
@@ -48,11 +64,18 @@ if (root) {
   for (const n of root.querySelectorAll("[data-js-show]")) n.hidden = false;
   select?.addEventListener("change", () => {
     const v = select.value;
+    clearPick();
     for (const c of cards) c.hidden = v !== "" && c.dataset.project !== v;
     updateCount();
   });
   root.addEventListener("change", (e) => {
-    if (e.target instanceof HTMLInputElement && e.target.type === "radio") requestAnimationFrame(updateCount);
+    if (e.target instanceof HTMLInputElement && e.target.type === "radio") {
+      clearPick();
+      requestAnimationFrame(updateCount);
+    }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !e.defaultPrevented) clearPick();
   });
   // Without JS the link reloads /ideas; with it, reset in place.
   empty?.querySelector("a")?.addEventListener("click", (e) => {

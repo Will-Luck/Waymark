@@ -342,7 +342,7 @@ func TestHeadlinePrecedence(t *testing.T) {
 		{"dormant", synth{lastCommit: 245 * day},
 			"No commits for 8 months", model.LevelInfo, ""},
 		{"archived suppresses alerts", synth{lastCommit: 245 * day, retired: true, declared: true, dockerKnown: true},
-			"Retired in the registry", model.LevelInfo, ""},
+			"Retired in the projects file", model.LevelInfo, ""},
 		{"stale PR", synth{lastCommit: 2 * day, commits: 1, prUpdated: 3 * day},
 			"Last commit 2 days ago", model.LevelGood, "Review"},
 		{"fresh PR", synth{lastCommit: 2 * day, commits: 1, prUpdated: 1 * day},

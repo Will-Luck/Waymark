@@ -99,8 +99,10 @@ func hasStatus(err error, code int) bool {
 // IsNotFound reports a 404 (missing file, repo or owner).
 func IsNotFound(err error) bool { return hasStatus(err, http.StatusNotFound) }
 
-// rateLimitError names when the spent allowance comes back. It is the same
-// for every repo, so callers pass it on unwrapped.
+// rateLimitError carries when the spent allowance comes back. It is the same
+// for every repo, so callers pass it on unwrapped. Its words name no time:
+// when to ask again is the app's to say (it caps the wait), from
+// RateLimitReset.
 type rateLimitError struct {
 	reset   time.Time
 	noToken bool
@@ -110,9 +112,6 @@ func (e *rateLimitError) Error() string {
 	msg := "github: rate limit reached"
 	if e.noToken {
 		msg += " (60 requests an hour without a token)"
-	}
-	if !e.reset.IsZero() {
-		msg += "; resets " + e.reset.UTC().Format("15:04 UTC")
 	}
 	return msg
 }

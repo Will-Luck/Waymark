@@ -623,7 +623,9 @@ func TestRateLimitIsNamed(t *testing.T) {
 	defer srv.Close()
 	c := New("github", srv.URL, "")
 	_, err := c.FetchMirror(context.Background(), "acme/app", time.Now())
-	want := "github: rate limit reached (60 requests an hour without a token); resets 02:34 UTC"
+	// No time in the words: when to ask again is the app's to say, and it
+	// may be sooner than the reset (app.RateLimitMaxWait).
+	want := "github: rate limit reached (60 requests an hour without a token)"
 	if err == nil || err.Error() != want {
 		t.Errorf("err = %v, want %q", err, want)
 	}
@@ -631,7 +633,7 @@ func TestRateLimitIsNamed(t *testing.T) {
 	// same way for every repo, so one message covers them all.
 	c = New("github", srv.URL, "t")
 	_, err = c.FetchDetail(context.Background(), forge.Repo{FullName: "acme/app", DefaultBranch: "main"}, time.Now(), 3, time.Now())
-	want = "github: rate limit reached; resets 02:34 UTC"
+	want = "github: rate limit reached"
 	if err == nil || err.Error() != want {
 		t.Errorf("detail err = %v, want %q", err, want)
 	}
@@ -656,7 +658,7 @@ func TestSecondaryRateLimit(t *testing.T) {
 		c.now = func() time.Time { return now }
 		_, err := c.Releases(context.Background(), "acme/app")
 		srv.Close()
-		if want := "github: rate limit reached; resets 14:02 UTC"; err == nil || err.Error() != want {
+		if want := "github: rate limit reached"; err == nil || err.Error() != want {
 			t.Errorf("%d: err = %v, want %q", code, err, want)
 		}
 		if reset, ok := forge.RateLimited(err); !ok || !reset.Equal(now.Add(2*time.Minute)) {

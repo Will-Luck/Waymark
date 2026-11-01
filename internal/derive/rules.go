@@ -354,7 +354,7 @@ func Tier(in TierInput, now time.Time) (model.Tier, string) {
 	}
 	switch {
 	case in.Retired:
-		return model.TierArchived, "Retired in the registry"
+		return model.TierArchived, "Retired in the projects file"
 	case in.RepoArchived:
 		return model.TierArchived, "Archived on " + in.Forge
 	case in.Hold != nil:

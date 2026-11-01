@@ -88,7 +88,7 @@ func TestGitHubPrimaryWording(t *testing.T) {
 	for _, a := range p.Actions {
 		sources[a.Verb] = a.Source
 	}
-	want := map[string]string{"Deploy": "GitHub tags + Docker", "Review": "GitHub", "Confirm": "Registry hold vs GitHub commits"}
+	want := map[string]string{"Deploy": "GitHub tags + Docker", "Review": "GitHub", "Confirm": "Projects file hold vs GitHub commits"}
 	for verb, src := range want {
 		if sources[verb] != src {
 			t.Errorf("%s source %q, want %q (actions %+v)", verb, sources[verb], src, p.Actions)

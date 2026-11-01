@@ -159,7 +159,7 @@ func TestDemoCoversEveryState(t *testing.T) {
 	if sb := project(t, s, "sandbox"); !sb.Auto || sb.Tier != model.TierDormant || sb.TierReason != "No commits yet" || !sb.LastActivity.IsZero() {
 		t.Errorf("sandbox = %s %q %v", sb.Tier, sb.TierReason, sb.LastActivity)
 	}
-	if old := project(t, s, "old-site"); old.Tier != model.TierArchived || old.TierReason != "Retired in the registry" || old.Repo == nil || !old.Repo.Archived {
+	if old := project(t, s, "old-site"); old.Tier != model.TierArchived || old.TierReason != "Retired in the projects file" || old.Repo == nil || !old.Repo.Archived {
 		t.Errorf("old-site = %s %q %+v", old.Tier, old.TierReason, old.Repo)
 	}
 	v := project(t, s, "vault")

@@ -2,6 +2,7 @@ package app
 
 import (
 	"bytes"
+	"context"
 	"log"
 	"os"
 	"path/filepath"
@@ -279,7 +280,7 @@ func TestRateLimitedForgeWaitsForReset(t *testing.T) {
 					t.Errorf("%v on: asked before the reset: %v", after, got[before:])
 					before = len(got)
 				}
-				if st, _ := sourceStatus(s, "github"); st.OK || !strings.Contains(st.Error, "rate limit reached") || !strings.Contains(st.Error, "resets 22:30 UTC") {
+				if st, _ := sourceStatus(s, "github"); st.OK || !strings.Contains(st.Error, "rate limit reached") || !strings.Contains(st.Error, "trying again after 22:30 UTC") {
 					t.Errorf("%v on: github status = %+v, want the limit and its reset", after, st)
 				}
 			}
@@ -292,5 +293,194 @@ func TestRateLimitedForgeWaitsForReset(t *testing.T) {
 				t.Errorf("after the reset: github status = %+v", st)
 			}
 		})
+	}
+}
+
+// limitAt is a spent rate limit that resets at the time it holds, as a forge
+// client reports one (forge.RateLimited).
+type limitAt time.Time
+
+func (limitAt) Error() string               { return "github: rate limit reached" }
+func (l limitAt) RateLimitReset() time.Time { return time.Time(l) }
+
+// A forge's status names the time the app will ask it again, which is the
+// time it waits for: never the forge's own reset when that is more than
+// RateLimitMaxWait away, and never a later, shorter limit's reset while the
+// longer wait stands.
+func TestRateLimitStatusNamesTheRetry(t *testing.T) {
+	h := newAcmeHost(t)
+	gh := h.forge("github", "github", "t2", []string{"acme"}, &acmeRepo{Owner: "acme", Name: "app", Tags: []string{"v2.0.0"}, Updated: fixedNow.Add(-day)})
+	a := h.app(nil, gh)
+	h.edit(func() { h.limit["github"], h.limitReset = "GET /user/repos", fixedNow.Add(3*time.Hour) })
+	s := runOnce(t, a)
+	if st, _ := sourceStatus(s, "github"); st.OK || !strings.Contains(st.Error, "rate limit reached") || !strings.Contains(st.Error, "trying again after 23:00 UTC") ||
+		strings.Contains(st.Error, "01:00") {
+		t.Errorf("a reset 3 h away: github status %q, want the retry an hour on (23:00 UTC) only", st.Error)
+	}
+	before := len(h.requests("github", ""))
+	a.now = func() time.Time { return fixedNow.Add(59 * time.Minute) }
+	s = runOnce(t, a)
+	if got := h.requests("github", ""); len(got) != before {
+		t.Errorf("asked before the time the status names: %v", got[before:])
+	}
+	if st, _ := sourceStatus(s, "github"); !strings.Contains(st.Error, "trying again after 23:00 UTC") {
+		t.Errorf("still waiting: github status %q", st.Error)
+	}
+	a.now = func() time.Time { return fixedNow.Add(61 * time.Minute) }
+	s = runOnce(t, a)
+	if len(h.requests("github", "")) == before {
+		t.Error("not asked again at the time the status named")
+	}
+	if st, _ := sourceStatus(s, "github"); !st.OK {
+		t.Errorf("after the retry: github status %+v", st)
+	}
+
+	// Two limits in one pass (reads run in parallel): the shorter one, met
+	// second, neither shortens the wait nor changes the time shown.
+	fs := a.byID["github"]
+	a.now = func() time.Time { return fixedNow.Add(2 * time.Hour) }
+	a.mu.Lock()
+	a.rateLimitLocked(fs, limitAt(fixedNow.Add(2*time.Hour+40*time.Minute)))
+	a.rateLimitLocked(fs, limitAt(fixedNow.Add(2*time.Hour+10*time.Minute)))
+	until, st := fs.limitUntil, a.status["github"]
+	a.mu.Unlock()
+	if want := fixedNow.Add(2*time.Hour + 40*time.Minute); !until.Equal(want) {
+		t.Errorf("waits until %v, want %v", until, want)
+	}
+	if !strings.Contains(st.Error, "trying again after 00:40 UTC") {
+		t.Errorf("after a longer then a shorter limit: github status %q, want the longer wait (00:40 UTC)", st.Error)
+	}
+}
+
+// Every row a rate limit stops names the time after which the forge is
+// asked again, not only the forge's own: the heatmap and the filed-idea
+// search too, whether they met the limit or wait for it. The time is the
+// wait's minute (22:30 for 22:30:45), never later than the retry, so a row
+// set during the wait still holds once the wait is over and the read that
+// met the limit waits for its next tick.
+func TestLimitedRowsNameTheRetry(t *testing.T) {
+	reset := fixedNow.Add(30*time.Minute + 45*time.Second)
+	const retry = "rate limit reached; trying again after 22:30 UTC"
+	h := newAcmeHost(t)
+	gh := h.forge("github", "github", "t2", []string{"acme"}, &acmeRepo{Owner: "acme", Name: "app", Updated: fixedNow.Add(-day)})
+	gh.Heatmap = true
+	ideas := writeIdeasFile(t)
+	a := h.app(func(c *config.Config) { c.Ideas.File = config.FileRef{File: ideas} }, gh)
+	h.edit(func() { h.limit["github"], h.limitReset = "GET /search/issues", reset })
+	s := runOnce(t, a)
+	if st, _ := sourceStatus(s, "ideas"); st.OK || !strings.Contains(st.Error, retry) {
+		t.Errorf("met the limit: ideas status %q", st.Error)
+	}
+	a.now = func() time.Time { return fixedNow.Add(10 * time.Minute) }
+	s = runOnce(t, a)
+	for _, name := range []string{"github", "heatmap", "ideas"} {
+		if st, _ := sourceStatus(s, name); st.OK || !strings.Contains(st.Error, retry) {
+			t.Errorf("waiting: %s status %q", name, st.Error)
+		}
+	}
+
+	// The list met it. The wait is over, the list is not read again yet,
+	// and something else sets the forge's row (a mirror check, say).
+	h = newAcmeHost(t)
+	gh = h.forge("github", "github", "t2", []string{"acme"}, &acmeRepo{Owner: "acme", Name: "app", Updated: fixedNow.Add(-day)})
+	a = h.app(nil, gh)
+	h.edit(func() { h.limit["github"], h.limitReset = "GET /user/repos", reset })
+	runOnce(t, a)
+	a.now = func() time.Time { return reset.Add(10 * time.Second) }
+	a.mu.Lock()
+	a.forgeStatusLocked(a.byID["github"])
+	st := a.status["github"]
+	a.mu.Unlock()
+	if st.OK || !strings.Contains(st.Error, retry) {
+		t.Errorf("wait over, list not read again: github status %q", st.Error)
+	}
+}
+
+// Mirrors are read every MirrorEvery. A pass that a rate limit cut short is
+// read again at the first check (every MirrorRetryEvery) after the limit
+// ends, so the forge does not show the limit for up to MirrorEvery more;
+// only that forge's mirrors are read, not those on a forge with no limit
+// (Gitea mirrors cli here). With no limit the check asks nothing.
+func TestMirrorsReadSoonAfterRateLimit(t *testing.T) {
+	h := newAcmeHost(t)
+	g := h.forge("gitea", "gitea", "t1", []string{"acme"},
+		&acmeRepo{Owner: "acme", Name: "tool", Updated: fixedNow.Add(-day)}, &acmeRepo{Owner: "acme", Name: "cli", Updated: fixedNow.Add(-day)})
+	gh := h.forge("github", "github", "t2", []string{"acme"},
+		&acmeRepo{Owner: "acme", Name: "tool", Updated: fixedNow.Add(-day)}, &acmeRepo{Owner: "acme", Name: "cli", Updated: fixedNow.Add(-day)})
+	file := filepath.Join(t.TempDir(), "projects.yaml")
+	body := "projects:\n  - slug: cli\n    name: CLI\n    repos:\n      - github: acme/cli\n      - gitea: acme/cli\n"
+	if err := os.WriteFile(file, []byte(body), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	a := h.app(func(c *config.Config) { c.Projects = config.FileRef{File: file} }, g, gh)
+	ctx := context.Background()
+	runOnce(t, a)
+	if len(h.requests("gitea", "/repos/acme/cli")) == 0 {
+		t.Fatal("gitea's mirror of cli was never read")
+	}
+	asked := func() (gitea, github int) { return len(h.requests("gitea", "")), len(h.requests("github", "")) }
+	g0, gh0 := asked()
+	a.now = func() time.Time { return fixedNow.Add(MirrorRetryEvery) }
+	a.retryMirrors(ctx)
+	if g1, gh1 := asked(); g1 != g0 || gh1 != gh0 {
+		t.Fatalf("no limit: the check asked gitea %d and github %d times", g1-g0, gh1-gh0)
+	}
+
+	reset := fixedNow.Add(20 * time.Minute)
+	h.edit(func() { h.limit["github"], h.limitReset = "GET /repos/acme/tool/releases/latest", reset })
+	a.now = func() time.Time { return fixedNow.Add(2 * time.Minute) }
+	a.collectMirrors(ctx)
+	h.edit(func() {
+		if h.limit["github"] != "" {
+			t.Fatal("the mirror was not read, so the limit was never met")
+		}
+	})
+	a.mu.Lock()
+	st := a.status["github"]
+	a.mu.Unlock()
+	if st.OK || !strings.Contains(st.Error, "trying again after 22:20 UTC") {
+		t.Fatalf("the limit is not shown: github status %+v", st)
+	}
+
+	g0, gh0 = asked()
+	tool0 := len(h.requests("github", "/repos/acme/tool"))
+	a.now = func() time.Time { return reset.Add(-time.Second) }
+	a.retryMirrors(ctx)
+	if g1, gh1 := asked(); g1 != g0 || gh1 != gh0 {
+		t.Errorf("before the reset: the check asked gitea %d and github %d times", g1-g0, gh1-gh0)
+	}
+	// The wait is over and the mirror not read again yet: its row still
+	// names the time.
+	a.now = func() time.Time { return reset }
+	a.mu.Lock()
+	a.forgeStatusLocked(a.byID["github"])
+	st = a.status["github"]
+	a.mu.Unlock()
+	if st.OK || !strings.Contains(st.Error, "trying again after 22:20 UTC") {
+		t.Errorf("wait over, mirror not read again: github status %+v", st)
+	}
+	a.now = func() time.Time { return reset.Add(MirrorRetryEvery / 2) }
+	a.retryMirrors(ctx)
+	g1, gh1 := asked()
+	if g1 != g0 {
+		t.Errorf("after the reset: the check read gitea's mirror too (%d requests)", g1-g0)
+	}
+	if len(h.requests("github", "/repos/acme/tool")) == tool0 || gh1 == gh0 {
+		t.Fatal("after the reset: the mirror was not read again before the next MirrorEvery")
+	}
+	a.mu.Lock()
+	st, m := a.status["github"], a.mirrors[repoKey("github", "acme/tool")]
+	a.mu.Unlock()
+	if !st.OK {
+		t.Errorf("after the mirror read: github status %+v", st)
+	}
+	if m == nil || !m.FetchedAt.Equal(reset.Add(MirrorRetryEvery/2)) {
+		t.Errorf("mirror view %+v, want one read at the check", m)
+	}
+	// Read once: the next check asks nothing.
+	a.now = func() time.Time { return reset.Add(2 * MirrorRetryEvery) }
+	a.retryMirrors(ctx)
+	if g2, gh2 := asked(); g2 != g1 || gh2 != gh1 {
+		t.Errorf("after the retry: the next check asked gitea %d and github %d times", g2-g1, gh2-gh1)
 	}
 }

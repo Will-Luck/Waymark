@@ -58,6 +58,11 @@ type Meta struct {
 	Docker     bool   `json:"docker"`      // a Docker feed or host is configured
 	Ideas      bool   `json:"ideas"`       // an ideas file is configured, or there are ideas
 	FDroid     bool   `json:"fdroid"`      // a project names an F-Droid package
+	// ProjectsFile and IdeasFile: a projects file and an ideas file are
+	// configured. The registry source reads them, and its row is named
+	// after the ones there are; with neither there is no such row.
+	ProjectsFile bool `json:"projects_file,omitempty"`
+	IdeasFile    bool `json:"ideas_file,omitempty"`
 	// IdeaLabels are the issue labels that make an idea (config ideas.labels).
 	IdeaLabels []string `json:"idea_labels,omitempty"`
 	// Forges names each forge (by config id) as the page shows it: "Gitea",

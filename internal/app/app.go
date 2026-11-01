@@ -59,6 +59,9 @@ var (
 	// RateLimitMaxWait away; RateLimitRetry when it names none.
 	RateLimitMaxWait = time.Hour
 	RateLimitRetry   = time.Minute
+	// A mirror pass that a rate limit cut short is read again at the first
+	// check after the limit ends, one every MirrorRetryEvery (retryMirrors).
+	MirrorRetryEvery = time.Minute
 )
 
 // EventsGrace is how long after start events wait for a forge that has not
@@ -103,6 +106,9 @@ type forgeState struct {
 	mirrorAt     time.Time
 	heat         []forge.HeatPoint
 	filed        []forge.Issue
+	// mirrorLimited: a rate limit kept the last mirror pass from some of
+	// this forge's mirrors; they are read again once it ends (retryMirrors).
+	mirrorLimited bool
 	// limitUntil: the forge answered that its rate limit is spent (limitErr,
 	// which its status shows); nothing is asked of it before then.
 	limitUntil time.Time
@@ -351,12 +357,15 @@ func (a *App) heatmapOn() bool {
 
 // sourceNames is the order of Site.Sources: the first forge, then the other
 // sources that are configured (config.SourceNames order), then the other
-// forges. The ideas source is the filed-idea search, so it needs a file.
+// forges. The registry source reads the projects and ideas files, so it
+// needs one of them; the ideas source is the filed-idea search, so it needs
+// an ideas file.
 func (a *App) sourceNames() []string {
 	names := []string{a.forges[0].cfg.ID}
 	for _, name := range config.SourceNames() {
 		switch {
-		case name == "heatmap" && !a.heatmapOn(),
+		case name == "registry" && !isSet(a.cfg.Projects) && !isSet(a.cfg.Ideas.File),
+			name == "heatmap" && !a.heatmapOn(),
 			name == "ideas" && a.filedQuery() == "",
 			name == "docker" && a.cfg.Docker.Feed == "" && a.cfg.Docker.Host == "",
 			name == "notes" && a.notesAd == nil:
@@ -478,6 +487,7 @@ func (a *App) Run(ctx context.Context) error {
 	loop(NotesEvery, a.collectNotes)
 	loop(FDroidEvery, a.collectFDroid)
 	loop(MirrorEvery, a.collectMirrors)
+	loop(MirrorRetryEvery, a.retryMirrors)
 
 	wg.Add(3)
 	go func() { defer wg.Done(); a.assembler(ctx) }()
@@ -619,7 +629,7 @@ func (a *App) forgeStatusLocked(fs *forgeState) {
 	}
 	switch {
 	case a.limitedLocked(fs):
-		err, refreshed = fs.limitErr, time.Time{}
+		err, refreshed = limitShown(fs), time.Time{}
 	case fs.listErr != nil:
 		err, refreshed = fmt.Errorf("repo list: %w (showing the last good data)", fs.listErr), time.Time{}
 	case namedErr != nil || fs.detailErr != nil:
@@ -684,18 +694,37 @@ func (a *App) noteOnce(msg string) {
 // limitedLocked reports whether fs is waiting for its rate limit to reset.
 func (a *App) limitedLocked(fs *forgeState) bool { return a.now().Before(fs.limitUntil) }
 
-// limitState is limitedLocked, with the error the forge gave, for a caller
-// that does not hold a.mu.
+// limitWaitLocked is limitedLocked, with what a read the wait stops reports
+// meanwhile: the forge's status words (limitShown).
+func (a *App) limitWaitLocked(fs *forgeState) (limited bool, err error) {
+	if !a.limitedLocked(fs) {
+		return false, nil
+	}
+	return true, limitShown(fs)
+}
+
+// limitState is limitWaitLocked for a caller that does not hold a.mu.
 func (a *App) limitState(fs *forgeState) (limited bool, err error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	return a.limitedLocked(fs), fs.limitErr
+	return a.limitWaitLocked(fs)
+}
+
+// limitHitLocked is rateLimitLocked for a read that reports err: when err is
+// the spent limit, what the read reports is limitShown, so it names the
+// retry like the forge's status. Any other err is returned as it is.
+func (a *App) limitHitLocked(fs *forgeState, err error) error {
+	if a.rateLimitLocked(fs, err) {
+		return limitShown(fs)
+	}
+	return err
 }
 
 // rateLimitLocked reports whether err says fs's rate limit is spent. If so,
 // nothing more is asked of fs until the reset it names, at most
 // RateLimitMaxWait away (RateLimitRetry when it names none, or one already
-// past), and its status shows err meanwhile.
+// past); a shorter limit met meanwhile does not shorten the wait. Its status
+// shows err and that time meanwhile (limitShown).
 func (a *App) rateLimitLocked(fs *forgeState, err error) bool {
 	reset, ok := forge.RateLimited(err)
 	if !ok {
@@ -716,6 +745,16 @@ func (a *App) rateLimitLocked(fs *forgeState, err error) bool {
 		a.forgeStatusLocked(fs)
 	}
 	return true
+}
+
+// limitShown is what a rate-limited forge's status says: the forge's answer
+// and when the app will ask it again, which is the wait itself (limitUntil),
+// not the reset the forge named. The time is the only one shown anywhere;
+// a client's error names none. It is the wait's end with the seconds cut
+// off, so "after" it is true during the wait and stays true once the wait is
+// over, until the read that met the limit runs again on its next tick.
+func limitShown(fs *forgeState) error {
+	return fmt.Errorf("%w; trying again after %s", fs.limitErr, fs.limitUntil.UTC().Format("15:04 UTC"))
 }
 
 func (a *App) warnOnce(msg string) {
@@ -914,8 +953,7 @@ func (a *App) listForge(ctx context.Context, fs *forgeState) bool {
 	switch {
 	case a.needsTokenLocked(fs, err):
 	case err != nil:
-		fs.listErr = err
-		a.rateLimitLocked(fs, err)
+		fs.listErr = a.limitHitLocked(fs, err)
 	default:
 		// Before the private filter: an owner whose repos are all private
 		// is not a typo.
@@ -995,9 +1033,12 @@ func (a *App) readNamed(ctx context.Context, failed map[string]bool) {
 			err := limit
 			if err == nil {
 				if r, err = fs.f.Repo(ctx, full); err != nil {
-					if _, ok := forge.RateLimited(err); ok {
+					a.mu.Lock()
+					if a.rateLimitLocked(fs, err) {
+						err = limitShown(fs)
 						limit = err
 					}
+					a.mu.Unlock()
 				}
 			}
 			if err != nil {
@@ -1023,7 +1064,6 @@ func (a *App) readNamed(ctx context.Context, failed map[string]bool) {
 		}
 		fs.named, fs.namedDropped, fs.namedFailed = named, dropped, failed
 		fs.repos = withNamed(fs.listing, named)
-		a.rateLimitLocked(fs, limit)
 		a.forgeStatusLocked(fs)
 		a.mu.Unlock()
 		if len(names) > 0 {
@@ -1085,11 +1125,12 @@ func (a *App) readFile(ctx context.Context, ref config.FileRef) (b []byte, notFo
 	}
 	b, err = src.Raw(ctx, ref.Repo, ref.Path, "")
 	if err != nil {
+		notFound = src.IsNotFound(err)
 		a.mu.Lock()
-		a.rateLimitLocked(fs, err)
+		err = a.limitHitLocked(fs, err)
 		a.mu.Unlock()
 	}
-	return b, err != nil && src.IsNotFound(err), err
+	return b, notFound, err
 }
 
 // fileProblem is what the registry source says about a file that could not
@@ -1333,8 +1374,7 @@ func (a *App) runDetailJob(ctx context.Context, j detailJob, now time.Time, chan
 		if a.needsTokenLocked(j.fs, err) {
 			err = nil
 		}
-		a.rateLimitLocked(j.fs, err)
-		st.detailErr = err
+		st.detailErr = a.limitHitLocked(j.fs, err)
 		if err == nil && d != nil {
 			st.detail = d
 			st.seenUpdated, st.seenIssues, st.seenPRs = j.repo.UpdatedAt.Time, j.repo.OpenIssues, j.repo.OpenPRs
@@ -1349,8 +1389,7 @@ func (a *App) runDetailJob(ctx context.Context, j detailJob, now time.Time, chan
 		if a.needsTokenLocked(j.fs, err) {
 			err = nil
 		}
-		a.rateLimitLocked(j.fs, err)
-		st.filesErr = err
+		st.filesErr = a.limitHitLocked(j.fs, err)
 		if err == nil && f != nil {
 			st.files = f
 			st.filesUpdated = j.repo.UpdatedAt.Time

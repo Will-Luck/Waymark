@@ -163,6 +163,9 @@ func (a *App) metaLocked() model.Meta {
 		Forges:     a.forgeNames,
 		Timezone:   a.cfg.Site.Timezone,
 		Demo:       a.cfg.Demo,
+
+		ProjectsFile: isSet(a.cfg.Projects),
+		IdeasFile:    isSet(a.cfg.Ideas.File),
 	}
 	if a.notesAd != nil {
 		m.NotesLabel = a.notesAd.Label()

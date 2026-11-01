@@ -268,9 +268,12 @@ func build(fc fileConfig, forges []Forge, getenv func(string) string) Config {
 		}
 		return v
 	}
-	// Private repos show only when asked for: the page has no login.
+	// Private repos show only when asked for: the page has no login. The
+	// file's key wins; only without it is the variable read (and checked).
 	includePrivate, badEnv := false, []string(nil)
-	if v := strings.TrimSpace(getenv("WAYMARK_INCLUDE_PRIVATE")); v != "" {
+	if fc.IncludePrivate != nil {
+		includePrivate = *fc.IncludePrivate
+	} else if v := strings.TrimSpace(getenv("WAYMARK_INCLUDE_PRIVATE")); v != "" {
 		b, err := strconv.ParseBool(v)
 		if err != nil {
 			badEnv = append(badEnv, fmt.Sprintf("WAYMARK_INCLUDE_PRIVATE: %q is not true or false", v))
@@ -280,7 +283,7 @@ func build(fc fileConfig, forges []Forge, getenv func(string) string) Config {
 	c := Config{
 		Listen:         str(fc.Listen, env("WAYMARK_LISTEN", ":8080")),
 		DataDir:        str(fc.DataDir, env("DATA_DIR", "/data")),
-		IncludePrivate: boolOr(fc.IncludePrivate, includePrivate),
+		IncludePrivate: includePrivate,
 		badEnv:         badEnv,
 		Forges:         forges,
 		Projects:       FileRef(fc.Projects),

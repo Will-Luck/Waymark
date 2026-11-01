@@ -99,11 +99,11 @@ func (a *App) collectHeatmap(ctx context.Context) {
 
 // forgeHeatmap is one forge's heatmap for the user its token belongs to;
 // skip is true when the forge needs a token for it. A forge waiting for its
-// rate limit is not asked: its error stands.
+// rate limit is not asked: its error stands, naming the retry.
 func (a *App) forgeHeatmap(ctx context.Context, fs *forgeState) (pts []forge.HeatPoint, skip bool, err error) {
 	a.mu.Lock()
 	login, skip := fs.me, fs.noToken
-	limited, limitErr := a.limitedLocked(fs), fs.limitErr
+	limited, limitErr := a.limitWaitLocked(fs)
 	a.mu.Unlock()
 	switch {
 	case skip:
@@ -115,10 +115,10 @@ func (a *App) forgeHeatmap(ctx context.Context, fs *forgeState) (pts []forge.Hea
 		me, err := fs.f.Me(ctx)
 		a.mu.Lock()
 		skip = a.needsTokenLocked(fs, err)
-		a.rateLimitLocked(fs, err)
 		if err == nil {
 			fs.me = me.Login
 		}
+		err = a.limitHitLocked(fs, err)
 		a.mu.Unlock()
 		switch {
 		case skip:
@@ -131,7 +131,7 @@ func (a *App) forgeHeatmap(ctx context.Context, fs *forgeState) (pts []forge.Hea
 	pts, err = fs.f.Heatmap(ctx, login)
 	a.mu.Lock()
 	skip = a.needsTokenLocked(fs, err)
-	a.rateLimitLocked(fs, err)
+	err = a.limitHitLocked(fs, err)
 	a.mu.Unlock()
 	if skip {
 		return nil, true, nil
@@ -182,7 +182,7 @@ func (a *App) collectFiled(ctx context.Context) {
 	for _, fs := range a.forges {
 		a.mu.Lock()
 		skip := fs.noToken
-		limited, limitErr := a.limitedLocked(fs), fs.limitErr
+		limited, limitErr := a.limitWaitLocked(fs)
 		a.mu.Unlock()
 		if skip {
 			continue
@@ -195,10 +195,10 @@ func (a *App) collectFiled(ctx context.Context) {
 		issues, err := fs.f.SearchIssues(ctx, query)
 		a.mu.Lock()
 		skip = a.needsTokenLocked(fs, err)
-		a.rateLimitLocked(fs, err)
 		if err == nil {
 			fs.filed, read = a.linkableLocked(fs, issues), true
 		}
+		err = a.limitHitLocked(fs, err)
 		a.mu.Unlock()
 		if skip {
 			continue
@@ -519,18 +519,40 @@ func (a *App) collectFDroid(ctx context.Context) {
 // collectMirrors reads every mirror view with FetchMirror, the light read:
 // each project's first mirror, or its primary when that forge gives no
 // detail without a token.
-func (a *App) collectMirrors(ctx context.Context) {
+func (a *App) collectMirrors(ctx context.Context) { a.readMirrors(ctx, nil) }
+
+// retryMirrors reads the mirror views again, at once, on each forge whose
+// last mirror pass a rate limit cut short, once that limit has ended: else
+// they wait for the next MirrorEvery, and the forge shows the limit all that
+// while. With no such forge it asks nothing.
+func (a *App) retryMirrors(ctx context.Context) {
+	a.mu.Lock()
+	due := map[string]bool{}
+	for _, fs := range a.forges {
+		if fs.mirrorLimited && !a.limitedLocked(fs) {
+			due[fs.cfg.ID] = true
+		}
+	}
+	a.mu.Unlock()
+	if len(due) > 0 {
+		a.readMirrors(ctx, due)
+	}
+}
+
+// readMirrors is one mirror pass over the forges in only (nil: every forge).
+func (a *App) readMirrors(ctx context.Context, only map[string]bool) {
 	if !a.running.mirrors.TryLock() {
 		return
 	}
 	defer a.running.mirrors.Unlock()
+	in := func(id string) bool { return only == nil || only[id] }
 	a.mu.Lock()
 	var targets []registry.RepoRef
 	asked := map[string]bool{}
 	seen := map[string]bool{}
 	for _, p := range a.projectsLocked() {
 		ref, _, ok := a.mirrorRefLocked(p)
-		if key := repoKey(ref.Forge, ref.FullName); ok && !seen[key] {
+		if key := repoKey(ref.Forge, ref.FullName); ok && in(ref.Forge) && !seen[key] {
 			seen[key] = true
 			asked[ref.Forge] = true
 			targets = append(targets, ref)
@@ -538,8 +560,8 @@ func (a *App) collectMirrors(ctx context.Context) {
 	}
 	// A forge with no mirrors left has no mirror error left either.
 	for _, fs := range a.forges {
-		if !asked[fs.cfg.ID] && len(fs.mirrorFailed) > 0 {
-			fs.mirrorFailed = nil
+		if in(fs.cfg.ID) && !asked[fs.cfg.ID] && (len(fs.mirrorFailed) > 0 || fs.mirrorLimited) {
+			fs.mirrorFailed, fs.mirrorLimited = nil, false
 			a.forgeStatusLocked(fs)
 		}
 	}
@@ -548,17 +570,22 @@ func (a *App) collectMirrors(ctx context.Context) {
 		return
 	}
 	errs := map[string][]repoFailure{}
+	limited := map[string]bool{} // forges a rate limit kept from some mirror
 	for _, ref := range targets {
 		key := repoKey(ref.Forge, ref.FullName)
 		fs := a.byID[ref.Forge]
-		if limited, limitErr := a.limitState(fs); limited { // the last good view stands
+		if wait, limitErr := a.limitState(fs); wait { // the last good view stands
 			errs[ref.Forge] = append(errs[ref.Forge], repoFailure{key, limitErr.Error()})
+			limited[ref.Forge] = true
 			continue
 		}
 		m, err := fs.f.FetchMirror(ctx, ref.FullName, a.now())
 		if err != nil {
 			a.mu.Lock()
-			a.rateLimitLocked(fs, err)
+			if a.rateLimitLocked(fs, err) {
+				limited[ref.Forge] = true
+				err = limitShown(fs)
+			}
 			a.mu.Unlock()
 			errs[ref.Forge] = append(errs[ref.Forge], repoFailure{key, err.Error()})
 			continue
@@ -581,7 +608,7 @@ func (a *App) collectMirrors(ctx context.Context) {
 		if !asked[fs.cfg.ID] {
 			continue
 		}
-		fs.mirrorFailed = errs[fs.cfg.ID]
+		fs.mirrorFailed, fs.mirrorLimited = errs[fs.cfg.ID], limited[fs.cfg.ID]
 		if len(fs.mirrorFailed) == 0 {
 			fs.mirrorAt = now
 		}

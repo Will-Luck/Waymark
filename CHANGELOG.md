@@ -7,11 +7,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-01
+
+### Added
+
+- `meta.projects_file` and `meta.ideas_file` in the site JSON say which of
+  the two files are configured.
+
+### Changed
+
+- The README is a picture tour: one screenshot and a line or two for each
+  page. The detail moved to the GitHub wiki: Installation, Privacy and
+  Security, Features, Configuration Reference, and FAQ and Known Limits.
+  The privacy list there is unchanged; `docs/configuration.md` stays in the
+  repo as the master of the Configuration Reference.
+- Plainer words on the pages, using the names the docs use. The map's
+  legend and lead say "state", as every other page does. The projects file
+  is called that: a Confirm card's source reads "Projects file hold vs Gitea
+  commits" (or GitHub, or the forge's own name), a retired project says
+  "Retired in the projects file", and the source row for the files is
+  named after the ones the site has: "Projects file", "Ideas file" or
+  "Projects and ideas files". The Ideas page says "Ideas from the ideas
+  file (updated 31 Oct 2026)". JSON field names are unchanged.
+- Surprise me keeps its pick marked: after the scroll the idea keeps an
+  outline and a "Surprise pick" label until the next pick, Esc or a filter
+  change, also when the device asks for less motion. The next pick is never
+  the same idea when there is another.
+
+### Fixed
+
+- Surprise me no longer leads to a 404 on a site with no Ideas page: the
+  command palette offers it only when there is an idea to pick, and an Ideas
+  page with no ideas yet says so instead of showing empty filters, naming
+  where ideas come from: the ideas file, labelled issues, or both.
+- A site with neither a projects file nor an ideas file no longer shows a
+  source row for them.
+- A rate-limited forge's status names the time after which Waymark will ask
+  it again (at most an hour away), not the forge's own reset; a shorter
+  limit met later no longer changes the words while the longer wait stands.
+  The heatmap, filed-idea search, mirror and file rows the limit stops name
+  the same time.
+- `WAYMARK_INCLUDE_PRIVATE` is read, and checked, only when the config file
+  has no `include_private`: a bad value no longer fails a config that sets
+  the key.
+- Mirrors are read again within a minute of a rate limit's end, not at the
+  next 30-minute read, so a forge does not stay red for up to 30 minutes
+  longer than the limit; with no limit nothing more is asked.
+
 ## [0.2.0] - 2026-11-01
 
 The first public release, as Waymark: one codebase anyone can run against
 their own Gitea, Forgejo and GitHub accounts, configured by one YAML file or
 by environment variables alone.
+The Changed and Removed lists below compare it with 0.1.0, a build for one
+homelab that was never published.
 
 ### Added
 

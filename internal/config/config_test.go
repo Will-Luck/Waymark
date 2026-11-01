@@ -340,7 +340,9 @@ func TestDefaults(t *testing.T) {
 
 // include_private is false unless set: by the file, else by
 // WAYMARK_INCLUDE_PRIVATE (the only way in env-only mode). A value that is
-// not a boolean fails validation, naming the variable, and leaves it false.
+// not a boolean fails validation, naming the variable, and leaves it false;
+// when the file sets the key the variable is not read, so a bad value there
+// is no error.
 func TestIncludePrivateDefaultAndEnv(t *testing.T) {
 	quick := map[string]string{"GITHUB_TOKEN": "ght"}
 	with := func(m map[string]string, k, v string) map[string]string {
@@ -365,6 +367,8 @@ func TestIncludePrivateDefaultAndEnv(t *testing.T) {
 		{"file without the key, env true", noKey, map[string]string{"WAYMARK_INCLUDE_PRIVATE": "true"}, true},
 		{"file false, env true", keyFalse, map[string]string{"WAYMARK_INCLUDE_PRIVATE": "true"}, false},
 		{"file true, env false", keyTrue, map[string]string{"WAYMARK_INCLUDE_PRIVATE": "false"}, true},
+		{"file false, env not a boolean", keyFalse, map[string]string{"WAYMARK_INCLUDE_PRIVATE": "yes please"}, false},
+		{"file true, env not a boolean", keyTrue, map[string]string{"WAYMARK_INCLUDE_PRIVATE": "yes please"}, true},
 	} {
 		c, err := Load(tc.path, env(tc.env))
 		if err != nil {
@@ -383,6 +387,14 @@ func TestIncludePrivateDefaultAndEnv(t *testing.T) {
 	}
 	if err := c.Validate(); c.IncludePrivate || err == nil || !strings.Contains(err.Error(), `WAYMARK_INCLUDE_PRIVATE: "yes please" is not true or false`) {
 		t.Errorf("bad value: include_private %v, err %v", c.IncludePrivate, err)
+	}
+	// A file without the key reads the variable, so a bad value fails there too.
+	c, err = Load(noKey, env(map[string]string{"WAYMARK_INCLUDE_PRIVATE": "yes please"}))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := c.Validate(); c.IncludePrivate || err == nil || !strings.Contains(err.Error(), "WAYMARK_INCLUDE_PRIVATE") {
+		t.Errorf("file without the key, bad value: include_private %v, err %v", c.IncludePrivate, err)
 	}
 }
 

@@ -71,11 +71,11 @@ func TestRoutes(t *testing.T) {
 			`class="ubar"`, `badge good`, `v2.4.0</b> is ready`}, landmarks...)},
 		{"/p/atlas", 200, append([]string{`data-live-panels="atlas"`, `id="pn-runs"`}, landmarks...)},
 		{"/ideas", 200, append([]string{`<a href="/ideas" aria-current="page">`, `data-ideas`, `id="k-quick-win"`, `id="s-S"`,
-			`Ideas from the roundup on <b>30 Oct 2026</b> and from issues labelled idea or enhancement. File one as an issue to make it real.`,
+			`Ideas from the ideas file (updated <b>30 Oct 2026</b>) and from issues labelled idea or enhancement. File one as an issue to make it real.`,
 			`data-surprise`, `id="idea-project"`}, landmarks...)},
 		{"/ships", 200, append([]string{`<a href="/ships" aria-current="page">`, `class="heat"`, `class="rel-line"`, `Current streak`}, landmarks...)},
 		{"/map", 200, append([]string{`<a href="/map" aria-current="page">`, `id="map-svg"`, `<script type="application/json" id="graph">`,
-			`class="legend wrap"`, `map-list"`}, landmarks...)},
+			`class="legend wrap"`, `map-list"`, `<b>Colour and the corner badge show its state</b>`, `<h2 class="legend-h">States</h2>`}, landmarks...)},
 		{"/p/no-such-project", 404, append([]string{`No project called <span class="mono">no-such-project</span>.`, `Search instead?`}, landmarks...)},
 		{"/nothing/here", 404, []string{`Nothing lives at`}},
 	}
@@ -825,6 +825,83 @@ func TestNoDashesInCopy(t *testing.T) {
 	}
 }
 
+var (
+	unseenRe = regexp.MustCompile(`(?s)<(script|style)\b.*?</(script|style)>`)
+	shownRe  = regexp.MustCompile(`\b(?:aria-label|title|alt|placeholder|content)="([^"]*)"`)
+	tagRe    = regexp.MustCompile(`<[^>]*>`)
+	// The words of the code, not the page: a state is not a tier, the
+	// projects file is not the registry, the ideas file is not the roundup.
+	// The demo's container registry (Harbour) is data, so the registry is
+	// matched only as the code named it.
+	codeWordRe = regexp.MustCompile(`(?i:\b(?:tiers?|roundup)\b)|\bRegistry\b|\bin the registry\b`)
+)
+
+// shownText is what a reader can see or hear of a page: its text and the
+// attributes read out or shown as tips, without scripts or styles.
+func shownText(body string) string {
+	body = unseenRe.ReplaceAllString(body, " ")
+	var b strings.Builder
+	for _, m := range shownRe.FindAllStringSubmatch(body, -1) {
+		b.WriteString(m[1] + "\n")
+	}
+	b.WriteString(tagRe.ReplaceAllString(body, " "))
+	return b.String()
+}
+
+// The page speaks to a stranger: no word from inside the code (tier,
+// registry, roundup) in any page's text, and the map's legend says state.
+func TestNoCodeWordsOnPages(t *testing.T) {
+	h, src := handler(t, "site.json", false)
+	paths := []string{"/", "/ideas", "/ships", "/map"}
+	for _, p := range src.Snapshot().Projects {
+		paths = append(paths, "/p/"+p.Slug)
+	}
+	for _, path := range paths {
+		if m := codeWordRe.FindAllString(shownText(get(t, h, path).Body.String()), -1); len(m) > 0 {
+			t.Errorf("%s says %q", path, m)
+		}
+	}
+	// The demo has both files.
+	if home := get(t, h, "/").Body.String(); !strings.Contains(home, "<b>Projects and ideas files</b>") {
+		t.Error("the files' source row is not named after them")
+	}
+	if got := liveLabels(t, h)["registry"]; got != "Projects and ideas files" {
+		t.Errorf("live.json names the files %q", got)
+	}
+}
+
+// The registry source's row is named after the files it reads, so an ideas
+// file's problem never reads as the projects file's.
+func TestFilesRowNamedAfterItsFiles(t *testing.T) {
+	for _, tc := range []struct {
+		projects, ideas bool
+		want            string
+	}{
+		{true, false, "Projects file"},
+		{false, true, "Ideas file"},
+		{true, true, "Projects and ideas files"},
+	} {
+		site := acmeSite()
+		site.Meta.ProjectsFile, site.Meta.IdeasFile = tc.projects, tc.ideas
+		site.Sources = append(site.Sources, model.SourceStatus{Name: "registry", Error: "read failed"})
+		h := serve(site)
+		home := get(t, h, "/").Body.String()
+		for _, w := range []string{"<b>" + tc.want + "</b> failing", tc.want + " failing"} {
+			if !strings.Contains(home, w) {
+				t.Errorf("%s: / lacks %q", tc.want, w)
+			}
+		}
+		for _, other := range []string{"Projects file", "Ideas file", "Projects and ideas files"} {
+			if other != tc.want && strings.Contains(home, other) {
+				t.Errorf("%s: / also says %q", tc.want, other)
+			}
+		}
+		if got := liveLabels(t, h)["registry"]; got != tc.want {
+			t.Errorf("%s: live.json label %q", tc.want, got)
+		}
+	}
+}
+
 func TestSpriteHasEveryFixtureIcon(t *testing.T) {
 	s, err := newServer(model.NewStaticSource(&model.Site{}), Options{}, assets.FS)
 	if err != nil {
@@ -1034,9 +1111,70 @@ func TestOptionalSourcesHide(t *testing.T) {
 		t.Errorf("search has %d ideas", len(ix.Ideas))
 	}
 	for _, c := range ix.Commands {
-		if c.ID == "go-ideas" {
-			t.Error("search offers the Ideas page")
+		if c.ID == "go-ideas" || c.ID == "surprise" {
+			t.Errorf("search offers %s with no Ideas page", c.Label)
 		}
+	}
+}
+
+// Surprise me picks an idea, so it is offered only when there is one: never
+// a way to the 404 of a site with no Ideas page, nor to a page with nothing
+// to pick. An Ideas page with no ideas says so instead of offering filters.
+func TestSurpriseNeedsAnIdea(t *testing.T) {
+	commands := func(h http.Handler) map[string]bool {
+		var ix searchIndex
+		if err := json.Unmarshal(get(t, h, "/api/search.json").Body.Bytes(), &ix); err != nil {
+			t.Fatal(err)
+		}
+		out := map[string]bool{}
+		for _, c := range ix.Commands {
+			out[c.ID] = true
+		}
+		return out
+	}
+	site := acmeSite()
+	site.Meta.Ideas, site.Meta.IdeaLabels = true, []string{"idea", "enhancement"}
+	h := serve(site)
+	if got := commands(h); !got["go-ideas"] || got["surprise"] {
+		t.Errorf("ideas on, none yet: commands %v, want the Ideas page and no Surprise me", got)
+	}
+	rec := get(t, h, "/ideas")
+	body := rec.Body.String()
+	if rec.Code != http.StatusOK || !strings.Contains(body, `<b>No ideas yet.</b> An open issue labelled idea or enhancement shows here.`) {
+		t.Errorf("ideas on, none yet: /ideas %d without the no-ideas note", rec.Code)
+	}
+	for _, w := range []string{"data-surprise", `id="k-all"`, "No ideas match these filters."} {
+		if strings.Contains(body, w) {
+			t.Errorf("ideas on, none yet: /ideas shows %q", w)
+		}
+	}
+
+	// An ideas file with nothing in it yet: the note names it too, as the
+	// lead does, labels or none.
+	site.Meta.IdeasFile = true
+	body = get(t, serve(site), "/ideas").Body.String()
+	for _, w := range []string{`<p class="lead">Ideas from the ideas file. File one as an issue to make it real.</p>`,
+		`<b>No ideas yet.</b> An idea added to the ideas file, or an open issue labelled idea or enhancement, shows here.`} {
+		if !strings.Contains(body, w) {
+			t.Errorf("ideas file, none yet: /ideas lacks %q", w)
+		}
+	}
+	noLabels := *site
+	noLabels.Meta.IdeaLabels = nil
+	if body := get(t, serve(&noLabels), "/ideas").Body.String(); !strings.Contains(body, `<b>No ideas yet.</b> An idea added to the ideas file shows here.`) {
+		t.Error("ideas file and no labels, none yet: the note does not name the ideas file")
+	}
+	site.Meta.IdeasFile = false
+
+	site.Ideas = []model.Idea{{ID: "github:acme/app#3", Project: "app", ProjectName: "App", Icon: "box", Title: "Dark mode", ExistingIssue: 3,
+		Source: "issue", URL: "https://github.com/acme/app/issues/3"}}
+	site.Projects[0].Ideas = site.Ideas
+	h = serve(site)
+	if got := commands(h); !got["surprise"] {
+		t.Errorf("one idea: commands %v, want Surprise me", got)
+	}
+	if body := get(t, h, "/ideas").Body.String(); !strings.Contains(body, "data-surprise") || strings.Contains(body, "No ideas yet.") {
+		t.Error("one idea: no Surprise me button, or the no-ideas note")
 	}
 }
 
@@ -1206,7 +1344,8 @@ func TestLabelIdeasCopy(t *testing.T) {
 	site.RoundupDate = "2026-10-31"
 	body = get(t, serve(site), "/ideas").Body.String()
 	for _, w := range []string{
-		`<p class="lead">Ideas from the roundup on <b>31 Oct 2026</b> and from issues labelled idea or enhancement. File one as an issue to make it real.</p>`,
+		`<p class="lead">Ideas from the ideas file (updated <b>31 Oct 2026</b>) and from issues labelled idea or enhancement. File one as an issue to make it real.</p>`,
+		`<meta name="description" content="Feature ideas from the ideas file, ready to file as issues.">`,
 		`(opens GitHub in a new tab)`, `Quick win`, `Small`,
 		// The label idea is an issue already: neither filed nor unfiled.
 		`<span class="kc-num">0</span><span class="kc-label">Already filed</span>`,
@@ -1214,6 +1353,18 @@ func TestLabelIdeasCopy(t *testing.T) {
 		if !strings.Contains(body, w) {
 			t.Errorf("both kinds: missing %q", w)
 		}
+	}
+	// The file alone, with its date and without one.
+	fileOnly := *site
+	fileOnly.Ideas = site.Ideas[1:]
+	if b := get(t, serve(&fileOnly), "/ideas").Body.String(); !strings.Contains(b,
+		`<p class="lead">Ideas from the ideas file (updated <b>31 Oct 2026</b>). File one as an issue to make it real.</p>`) {
+		t.Error("file ideas only: the lead does not name the ideas file and its date")
+	}
+	fileOnly.RoundupDate = ""
+	if b := get(t, serve(&fileOnly), "/ideas").Body.String(); !strings.Contains(b,
+		`<p class="lead">Ideas from the ideas file. File one as an issue to make it real.</p>`) {
+		t.Error("file ideas with no date: the lead does not name the ideas file")
 	}
 	// A project with no repo names the forge it would file on.
 	site.Projects[0].Repo, site.Ideas[1].FileURL = nil, ""

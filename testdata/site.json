@@ -4535,7 +4535,7 @@
           "icon": "pen-line",
           "verb": "Confirm",
           "text": "Still parked? 2 commits since 21 Sep",
-          "source": "Registry hold vs Gitea commits",
+          "source": "Projects file hold vs Gitea commits",
           "heuristic": false,
           "level": "warn",
           "at": "2026-10-19T22:00:00Z"
@@ -4663,7 +4663,7 @@
           "at": "2026-10-31T22:00:00Z"
         }
       ],
-      "hash": "15a96299d18d9913"
+      "hash": "bb61db453f2015f4"
     },
     {
       "slug": "vault",
@@ -4945,8 +4945,8 @@
       "runs_on": "",
       "auto": false,
       "tier": "archived",
-      "tier_reason": "Retired in the registry",
-      "headline": "Retired in the registry",
+      "tier_reason": "Retired in the projects file",
+      "headline": "Retired in the projects file",
       "headline_level": "info",
       "forge": "Gitea",
       "repo": {
@@ -5009,7 +5009,7 @@
           "at": "2026-10-31T22:00:00Z"
         }
       ],
-      "hash": "f12ec9e195da3621"
+      "hash": "b391b8f0ce6c9ec3"
     }
   ],
   "needs_you": [
@@ -5078,7 +5078,7 @@
       "icon": "pen-line",
       "verb": "Confirm",
       "text": "Still parked? 2 commits since 21 Sep",
-      "source": "Registry hold vs Gitea commits",
+      "source": "Projects file hold vs Gitea commits",
       "heuristic": false,
       "level": "warn",
       "at": "2026-10-19T22:00:00Z"
@@ -7597,6 +7597,8 @@
     "docker": true,
     "ideas": true,
     "fdroid": true,
+    "projects_file": true,
+    "ideas_file": true,
     "idea_labels": [
       "idea",
       "enhancement"

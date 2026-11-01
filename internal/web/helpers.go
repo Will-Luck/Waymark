@@ -168,7 +168,7 @@ func sourceLabel(name string, m model.Meta) string {
 	case "github":
 		return "GitHub"
 	case "registry":
-		return "Registry"
+		return filesLabel(m)
 	case "heatmap":
 		return "Heatmap"
 	}
@@ -176,6 +176,17 @@ func sourceLabel(name string, m model.Meta) string {
 		return "Unknown"
 	}
 	return strings.ToUpper(name[:1]) + name[1:]
+}
+
+// filesLabel names the registry source's row after the files it reads.
+func filesLabel(m model.Meta) string {
+	switch {
+	case m.ProjectsFile && m.IdeasFile:
+		return "Projects and ideas files"
+	case m.IdeasFile:
+		return "Ideas file"
+	}
+	return "Projects file"
 }
 
 func stateWord(state string) string {

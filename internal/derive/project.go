@@ -905,7 +905,7 @@ func actions(env Env, p model.Project, in Input, dep *model.DeployInfo, containe
 	}
 	if h := p.Hold; h != nil && h.Contradicted {
 		add("Confirm", "Still "+strings.ToLower(holdWord(h.Kind))+"? "+fmtCommits(h.CommitsSince, holdLower)+" since "+ShortDate(h.Since, now, loc),
-			"Registry hold vs "+p.Forge+" commits", model.LevelWarn, lastCommit, "", false)
+			"Projects file hold vs "+p.Forge+" commits", model.LevelWarn, lastCommit, "", false)
 	}
 	n := 0
 	for _, note := range in.Notes {

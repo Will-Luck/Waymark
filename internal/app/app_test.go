@@ -640,6 +640,57 @@ func TestSnapshotBeforeTheFirstCycleSaysPending(t *testing.T) {
 	}
 }
 
+// The registry source reads the projects and ideas files: with neither
+// there is no such source, before the first cycle or after it, and Meta says
+// which there are, so the page can name the row after them.
+func TestFilesSourceOnlyWithAFile(t *testing.T) {
+	dir := t.TempDir()
+	projects := filepath.Join(dir, "projects.yaml")
+	if err := os.WriteFile(projects, []byte("projects:\n  - slug: box\n    name: Box\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	missing := filepath.Join(dir, "ideas.json")
+	for _, tc := range []struct {
+		name            string
+		projects, ideas bool
+		ok              bool
+		err             string // what the failing status says
+	}{
+		{name: "neither"},
+		{name: "projects file", projects: true, ok: true},
+		{name: "ideas file", ideas: true, err: missing + " does not exist yet"},
+		{name: "both", projects: true, ideas: true, err: missing + " does not exist yet"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			h := newAcmeHost(t)
+			g := h.forge("gitea", "gitea", "t1", []string{"acme"}, &acmeRepo{Owner: "acme", Name: "tool", Updated: fixedNow.Add(-day)})
+			a := h.app(func(c *config.Config) {
+				if tc.projects {
+					c.Projects = config.FileRef{File: projects}
+				}
+				if tc.ideas {
+					c.Ideas.File = config.FileRef{File: missing}
+				}
+			}, g)
+			for _, s := range []*model.Site{a.Snapshot(), runOnce(t, a)} {
+				if s.Meta.ProjectsFile != tc.projects || s.Meta.IdeasFile != tc.ideas {
+					t.Errorf("meta projects file %v, ideas file %v", s.Meta.ProjectsFile, s.Meta.IdeasFile)
+				}
+				st, ok := sourceStatus(s, "registry")
+				if want := tc.projects || tc.ideas; ok != want {
+					t.Errorf("registry source listed %v, want %v: %v", ok, want, sourceNamesOf(s))
+				}
+				if !ok || st.Error == "first read in progress" {
+					continue
+				}
+				if st.OK != tc.ok || !strings.Contains(st.Error, tc.err) {
+					t.Errorf("registry status %+v", st)
+				}
+			}
+		})
+	}
+}
+
 func probeKey(w *world) string { return w.srv.URL + "/probe/beacon" }
 
 // A probe cycle cut short by shutdown records nothing: no false outage in
