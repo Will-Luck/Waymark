@@ -1,0 +1,61 @@
+{{define "main"}}{{$v := .Data}}
+<div class="wrap">
+  <h1 class="sr">Overview</h1>
+
+  <section class="hero" aria-label="At a glance">
+    <ul class="stats">
+      {{range $v.Tiles}}<li>{{if .Href}}<a class="stat {{.Class}}" href="{{.Href}}">{{else}}<span class="stat {{.Class}}">{{end}}
+        <span class="stat-label">{{icon .Icon}}{{.Label}}</span>
+        <span class="stat-num">{{num .Value}}</span>
+        {{with .Note}}<span class="stat-note">{{.}}</span>{{end}}
+      {{if .Href}}</a>{{else}}</span>{{end}}</li>{{end}}
+    </ul>
+    {{with $v.Weeks}}<a class="weeks-link" href="/ships" aria-label="Commits per week for the last 53 weeks. Open the ship log.">{{.}}</a>{{end}}
+  </section>
+
+  {{if $v.Needs}}
+  <section id="needs-you" class="block needs-sec" aria-labelledby="needs-h">
+    <h2 id="needs-h" class="sec-h">{{icon "hand"}}Needs you <span class="count">{{len .Site.NeedsYou}}</span></h2>
+    <div class="needs-grid">{{range $v.Needs}}{{template "need" .}}{{end}}</div>
+    {{with $v.MoreNeeds}}<details class="more"><summary>{{icon "chevron-down" "chev"}}Show {{len .}} more</summary><div class="needs-grid">{{range .}}{{template "need" .}}{{end}}</div></details>{{end}}
+  </section>
+  {{end}}
+
+  {{if $v.Groups}}
+  <section class="block since" data-since aria-labelledby="since-h">
+    <h2 id="since-h" class="sec-h">{{icon "history"}}Since you last looked</h2>
+    <p class="since-sum" data-since-sum><b>{{plural $v.Recent "change" "changes"}}</b> in the last 7 days.</p>
+    <ol class="since-groups">
+      {{range $v.Groups}}<li class="since-group">
+        <a class="sg-proj" href="/p/{{.Slug}}"><span class="tile xs" data-cat="{{.Cat}}">{{icon .Icon}}</span><b>{{.Name}}</b></a>
+        <ul class="evs">{{range .Events}}<li class="ev lv-{{.Level}}" data-at="{{unixMilli .At}}"{{if .Old}} data-old{{end}}>{{icon (eventIcon .Kind)}}<span class="ev-text"><span class="sr">{{levelWord .Level}}: </span>{{.Text}}</span><span class="ev-when">{{ago .At}}</span></li>{{end}}</ul>
+      </li>{{end}}
+    </ol>
+    <button type="button" class="btn quiet" data-since-all hidden>{{icon "chevron-down"}}Show all changes</button>
+  </section>
+  {{end}}
+
+  <section id="board" class="block board" aria-labelledby="board-h">
+    <div class="board-top">
+      <h2 id="board-h" class="sec-h">{{icon "layout-dashboard"}}All projects <span class="count">{{$v.Total}}</span></h2>
+      <fieldset class="filter">
+        <legend class="sr">Show one category</legend>
+        <input type="radio" name="cat" id="cat-all" value="" checked><label for="cat-all">{{icon "layers"}}All <span class="n">{{$v.Total}}</span></label>
+        {{range $v.Cats}}<input type="radio" name="cat" id="cat-{{.Key}}" value="{{.Key}}"><label for="cat-{{.Key}}" data-cat="{{.Key}}">{{icon .Icon}}{{.Label}} <span class="n">{{.Count}}</span></label>{{end}}
+      </fieldset>
+    </div>
+    {{range $v.Tiers}}{{if .Projects}}
+    <details class="tier {{.Class}}" id="tier-{{.Tier}}"{{if .Open}} open{{end}}>
+      <summary>
+        <span class="tier-ic">{{icon .Icon}}</span>
+        <span class="tier-word">{{.Label}}</span>
+        <span class="count" data-n="all">{{len .Projects}}</span>{{range .CatCounts}}<span class="count" data-n="{{.Key}}">{{.Count}}</span>{{end}}
+        <span class="tier-explain">{{.Explain}}</span>
+        {{icon "chevron-down" "chev"}}
+      </summary>
+      <div class="cards">{{range .Projects}}{{template "card" .}}{{end}}</div>
+    </details>
+    {{end}}{{end}}
+  </section>
+</div>
+{{end}}

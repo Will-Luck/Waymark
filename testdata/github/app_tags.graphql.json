@@ -1,0 +1,27 @@
+{
+  "data": {
+    "repository": {
+      "refs": {
+        "pageInfo": {"hasNextPage": false, "endCursor": "Mw"},
+        "nodes": [
+          {
+            "name": "v1.2.0",
+            "target": {
+              "oid": "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0",
+              "message": "Parcel labels\n",
+              "target": {"oid": "4f1c2a9e8b7d6c5a4f3e2d1c0b9a8f7e6d5c4b3a", "committedDate": "2026-10-31T09:58:00Z"}
+            }
+          },
+          {
+            "name": "v1.2.0-rc.1",
+            "target": {"oid": "2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e", "committedDate": "2026-10-28T16:45:00Z"}
+          },
+          {
+            "name": "v1.1.0",
+            "target": {"oid": "6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d", "committedDate": "2026-09-14T16:20:00Z"}
+          }
+        ]
+      }
+    }
+  }
+}

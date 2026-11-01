@@ -1,0 +1,112 @@
+# Identity only, never state: Waymark derives the rest.
+owner: acme
+categories:
+  - {key: services, label: Services, icon: server, hue: 150}
+  - {key: apps, label: Apps, icon: layout-dashboard, hue: 210}
+  - {key: mobile, label: Mobile, icon: smartphone, hue: 300}
+  - {key: tools, label: Tools, icon: package, hue: 40}
+  - {key: operations, label: Operations, icon: network, hue: 20}
+hide_repos: [waymark-config]
+projects:
+  - slug: beacon
+    name: Beacon
+    category: services
+    icon: bell-ring
+    summary: Status pages and uptime alerts for small teams.
+    what: Beacon checks the team's sites every minute and posts incidents to a public status page.
+    stack: [Go, PostgreSQL]
+    runs_on: Docker on web-01
+    repos:
+      - gitea: beacon
+    containers: [beacon]
+    urls:
+      - {label: Live, url: "https://status.example.com", probe: "http://sites.example.net/probe/beacon"}
+    relations:
+      - {to: ledger, kind: depends-on}
+      - {to: atlas, kind: monitors}
+      - {to: harbour, kind: monitors}
+  - slug: beacon-app
+    name: Beacon for Android
+    category: mobile
+    icon: smartphone
+    summary: Incident alerts on your phone.
+    what: A small Android app that shows Beacon's incidents, published through the team's F-Droid repo.
+    stack: [Kotlin]
+    runs_on: F-Droid
+    repos:
+      - gitea: beacon-app
+    containers: [fdroid-repo]
+    fdroid: {index: "http://sites.example.net/fdroid/repo/index-v1.json", package: com.example.beacon}
+    notes: [beacon_app.md]
+    relations:
+      - {to: beacon, kind: client-of}
+  - slug: harbour
+    name: Harbour
+    category: services
+    icon: ship
+    summary: A small container registry with garbage collection.
+    what: Holds the team's images. Public on GitHub, where most of its issues are filed.
+    stack: [Go]
+    runs_on: Docker on web-01
+    repos:
+      - gitea: harbour
+      - github: harbour
+    containers: [harbour]
+    urls:
+      - {label: Live, url: "https://registry.example.com", probe: "http://sites.example.net/probe/harbour"}
+  - slug: atlas
+    name: Atlas
+    category: apps
+    icon: map
+    summary: Map tiles for the team's apps.
+    stack: [Go, SQLite]
+    runs_on: Docker on web-01
+    repos:
+      - gitea: atlas
+    urls:
+      - {label: Live, url: "https://maps.example.com", probe: "http://sites.example.net/probe/atlas"}
+  - slug: inkwell
+    name: Inkwell
+    category: apps
+    icon: pen-line
+    summary: A shared writing pad with comments.
+    stack: [TypeScript]
+    repos:
+      - gitea: inkwell
+    hold: {kind: parked, since: "2026-09-21", reason: Waiting for the new editor library}
+  - slug: vault
+    name: Vault
+    category: tools
+    icon: lock
+    summary: Shared secrets for the deploy scripts.
+    stack: [Go]
+    runs_on: Docker on web-01
+    repos:
+      - gitea: vault
+    containers: [vault]
+    relations:
+      - {to: beacon, kind: sibling}
+  - slug: kite
+    name: Kite
+    category: tools
+    icon: command
+    summary: A command-line client for the team's APIs.
+    stack: [Go]
+    repos:
+      - github: kite
+    relations:
+      - {to: ledger, kind: client-of}
+  - slug: old-site
+    name: Old site
+    category: apps
+    icon: globe
+    summary: The first company website, replaced in the spring.
+    repos:
+      - gitea: old-site
+    retired: true
+  - slug: office-network
+    name: Office network
+    category: operations
+    icon: router
+    summary: The office routers, switches and Wi-Fi.
+    what: No code here; the notes are the record of the work.

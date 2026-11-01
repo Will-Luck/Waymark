@@ -1,0 +1,15 @@
+{{define "main"}}{{$v := .Data}}
+<div class="wrap nf">
+  <span class="nf-ic">{{icon "compass"}}</span>
+  {{if $v.Slug}}<h1 class="nf-h">No project called <span class="mono">{{$v.Slug}}</span>.</h1>
+  {{else}}<h1 class="nf-h">Nothing lives at <span class="mono">{{$v.Path}}</span>.</h1>{{end}}
+  <p class="nf-actions">
+    <button type="button" class="btn accent" data-palette-open hidden data-js-show>{{icon "search"}}Search instead?</button>
+    <a class="btn" href="/">{{icon "layout-dashboard"}}Back to the overview</a>
+  </p>
+  {{with $v.Suggest}}
+  <h2 class="sec-h">Did you mean</h2>
+  <ul class="suggest">{{range .}}<li><a href="/p/{{.Slug}}" data-cat="{{.Category}}"><span class="tile sm">{{icon .Icon}}</span><span><b>{{.Name}}</b><span class="muted small">{{.Summary}}</span></span></a></li>{{end}}</ul>
+  {{end}}
+</div>
+{{end}}

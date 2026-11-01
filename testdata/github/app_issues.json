@@ -1,0 +1,102 @@
+[
+  {
+    "url": "https://api.github.com/repos/acme/app/issues/15",
+    "repository_url": "https://api.github.com/repos/acme/app",
+    "html_url": "https://github.com/acme/app/pull/15",
+    "id": 3000015,
+    "number": 15,
+    "title": "Speed up the repo list",
+    "user": {"login": "example-dev", "id": 1003, "type": "User"},
+    "labels": [],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [],
+    "comments": 3,
+    "created_at": "2026-10-27T09:00:00Z",
+    "updated_at": "2026-10-30T12:00:00Z",
+    "closed_at": null,
+    "author_association": "CONTRIBUTOR",
+    "draft": false,
+    "pull_request": {
+      "url": "https://api.github.com/repos/acme/app/pulls/15",
+      "html_url": "https://github.com/acme/app/pull/15",
+      "diff_url": "https://github.com/acme/app/pull/15.diff",
+      "patch_url": "https://github.com/acme/app/pull/15.patch",
+      "merged_at": null
+    },
+    "body": "Caches the listing between refreshes."
+  },
+  {
+    "url": "https://api.github.com/repos/acme/app/issues/12",
+    "repository_url": "https://api.github.com/repos/acme/app",
+    "html_url": "https://github.com/acme/app/issues/12",
+    "id": 3000012,
+    "number": 12,
+    "title": "Crash when the config file is empty",
+    "user": {"login": "example-user", "id": 1004, "type": "User"},
+    "labels": [
+      {"id": 501, "name": "bug", "color": "d73a4a", "default": true, "description": "Something isn't working"}
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": {"login": "mark-example", "id": 1002, "type": "User"},
+    "assignees": [{"login": "mark-example", "id": 1002, "type": "User"}],
+    "comments": 2,
+    "created_at": "2026-10-25T17:40:00Z",
+    "updated_at": "2026-10-29T08:00:00Z",
+    "closed_at": null,
+    "author_association": "NONE",
+    "body": "Starting with an empty config file panics."
+  },
+  {
+    "url": "https://api.github.com/repos/acme/app/issues/9",
+    "repository_url": "https://api.github.com/repos/acme/app",
+    "html_url": "https://github.com/acme/app/issues/9",
+    "id": 3000009,
+    "number": 9,
+    "title": "Document the export format",
+    "user": {"login": "acme", "id": 1001, "type": "User"},
+    "labels": [
+      {"id": 502, "name": "documentation", "color": "0075ca", "default": true, "description": "Improvements or additions to documentation"}
+    ],
+    "state": "open",
+    "locked": false,
+    "assignee": null,
+    "assignees": [],
+    "comments": 0,
+    "created_at": "2026-09-12T10:00:00Z",
+    "updated_at": "2026-10-20T11:30:00Z",
+    "closed_at": null,
+    "author_association": "OWNER",
+    "body": null
+  },
+  {
+    "url": "https://api.github.com/repos/acme/app/issues/13",
+    "repository_url": "https://api.github.com/repos/acme/app",
+    "html_url": "https://github.com/acme/app/pull/13",
+    "id": 3000013,
+    "number": 13,
+    "title": "New importer",
+    "user": {"login": "acme", "id": 1001, "type": "User"},
+    "labels": [],
+    "state": "open",
+    "locked": false,
+    "assignee": {"login": "acme", "id": 1001, "type": "User"},
+    "assignees": [{"login": "acme", "id": 1001, "type": "User"}],
+    "comments": 1,
+    "created_at": "2026-10-05T08:00:00Z",
+    "updated_at": "2026-10-10T15:00:00Z",
+    "closed_at": null,
+    "author_association": "OWNER",
+    "draft": true,
+    "pull_request": {
+      "url": "https://api.github.com/repos/acme/app/pulls/13",
+      "html_url": "https://github.com/acme/app/pull/13",
+      "diff_url": "https://github.com/acme/app/pull/13.diff",
+      "patch_url": "https://github.com/acme/app/pull/13.patch",
+      "merged_at": null
+    },
+    "body": "Work in progress."
+  }
+]

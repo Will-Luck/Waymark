@@ -1,0 +1,44 @@
+# Waymark example configuration. Copy to /config/waymark.yml (or point
+# WAYMARK_CONFIG at it). ${VAR} and $VAR are expanded from the environment, so
+# tokens stay out of the file. Every key, its default and what it does:
+# docs/configuration.md.
+# listen: ":8080"              # the address the page is served on
+# data_dir: /data              # state.json and the last good projects and ideas files
+site:
+  title: Waymark
+  timezone: UTC
+  you: [Mark]                  # names notes use for the owner (notes adapters only)
+include_private: false         # true shows private repos too: only behind a login
+forges:
+  - id: gitea                  # the key projects.yaml uses: "- gitea: owner/name"
+    type: gitea                # gitea | forgejo (same API) | github
+    url: https://git.example.com
+    token: ${GITEA_TOKEN}
+    owners: [acme]             # users/orgs tracked; empty = the token user's own repos only
+    heatmap: true
+  - id: github
+    type: github
+    token: ${GITHUB_TOKEN}     # optional; without it only repos named in projects.yaml, 60 req/h
+    owners: [acme]
+projects:                      # optional overrides
+  file: /config/projects.yaml
+  # or: {forge: gitea, repo: acme/waymark-config, path: projects.yaml}
+ideas:
+  labels: [idea, enhancement]  # open issues with these labels become ideas
+  file: ""                     # optional ideas.json; same repo-or-file choice as projects
+  marker: "waymark-idea:"
+needs_you:
+  labels: [needs-you, decision]
+  assigned: true               # open issues assigned to the token user -> Decide
+  review_requests: true        # PRs requesting the token user's review -> Review
+notes:
+  type: none                   # none | markdown | claude-memory
+  dir: /notes
+  markers: ["WAITING:", "@me"]
+plans:
+  dirs: [docs/plans, docs/superpowers/plans]
+docker:
+  feed: /feed/docker.json      # or host: unix:///var/run/docker.sock
+  label: Docker
+probes:
+  homepages: true

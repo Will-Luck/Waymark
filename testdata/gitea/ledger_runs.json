@@ -1,0 +1,78 @@
+{
+  "total_count": 3,
+  "workflow_runs": [
+    {
+      "actor": {
+        "avatar_url": "https://git.example.com/avatars/mark",
+        "email": "mark@example.com",
+        "full_name": "Mark",
+        "id": 4,
+        "login": "mark",
+        "username": "mark"
+      },
+      "completed_at": "2026-10-31T03:03:00+01:00",
+      "conclusion": "failure",
+      "display_title": "Fix rounding in VAT totals",
+      "event": "push",
+      "head_branch": "main",
+      "head_sha": "cdffb6aa159cc22ed54c1aeed285fbc092c2077f",
+      "html_url": "https://git.example.com/acme/ledger/actions/runs/305",
+      "id": 3305,
+      "path": "ci.yml@refs/heads/main",
+      "run_attempt": 1,
+      "run_number": 305,
+      "started_at": "2026-10-31T03:00:00+01:00",
+      "status": "completed",
+      "url": "https://git.example.com/api/v1/repos/acme/ledger/actions/runs/3305"
+    },
+    {
+      "actor": {
+        "avatar_url": "https://git.example.com/avatars/mark",
+        "email": "mark@example.com",
+        "full_name": "Mark",
+        "id": 4,
+        "login": "mark",
+        "username": "mark"
+      },
+      "completed_at": "2026-10-30T21:04:00+01:00",
+      "conclusion": "success",
+      "display_title": "Batch import from CSV",
+      "event": "push",
+      "head_branch": "csv-import",
+      "head_sha": "cdffb6aa159cc22ed54c1aeed285fbc092c2077f",
+      "html_url": "https://git.example.com/acme/ledger/actions/runs/304",
+      "id": 3304,
+      "path": "ci.yml@refs/heads/csv-import",
+      "run_attempt": 1,
+      "run_number": 304,
+      "started_at": "2026-10-30T21:00:00+01:00",
+      "status": "completed",
+      "url": "https://git.example.com/api/v1/repos/acme/ledger/actions/runs/3304"
+    },
+    {
+      "actor": {
+        "avatar_url": "https://git.example.com/avatars/mark",
+        "email": "mark@example.com",
+        "full_name": "Mark",
+        "id": 4,
+        "login": "mark",
+        "username": "mark"
+      },
+      "completed_at": "2026-10-29T23:04:00+01:00",
+      "conclusion": "success",
+      "display_title": "Add invoice numbering per year",
+      "event": "push",
+      "head_branch": "main",
+      "head_sha": "cdffb6aa159cc22ed54c1aeed285fbc092c2077f",
+      "html_url": "https://git.example.com/acme/ledger/actions/runs/303",
+      "id": 3303,
+      "path": "ci.yml@refs/heads/main",
+      "run_attempt": 1,
+      "run_number": 303,
+      "started_at": "2026-10-29T23:00:00+01:00",
+      "status": "completed",
+      "url": "https://git.example.com/api/v1/repos/acme/ledger/actions/runs/3303"
+    }
+  ]
+}
+

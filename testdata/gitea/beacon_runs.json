@@ -1,0 +1,78 @@
+{
+  "total_count": 3,
+  "workflow_runs": [
+    {
+      "actor": {
+        "avatar_url": "https://git.example.com/avatars/mark",
+        "email": "mark@example.com",
+        "full_name": "Mark",
+        "id": 4,
+        "login": "mark",
+        "username": "mark"
+      },
+      "completed_at": "2026-10-31T18:06:00+01:00",
+      "conclusion": "success",
+      "display_title": "Show incident duration on the status page",
+      "event": "push",
+      "head_branch": "main",
+      "head_sha": "c433254977de5ed9ce3e3840baae76c3eb02f334",
+      "html_url": "https://git.example.com/acme/beacon/actions/runs/412",
+      "id": 1412,
+      "path": "ci.yml@refs/heads/main",
+      "run_attempt": 1,
+      "run_number": 412,
+      "started_at": "2026-10-31T18:02:00+01:00",
+      "status": "completed",
+      "url": "https://git.example.com/api/v1/repos/acme/beacon/actions/runs/1412"
+    },
+    {
+      "actor": {
+        "avatar_url": "https://git.example.com/avatars/mark",
+        "email": "mark@example.com",
+        "full_name": "Mark",
+        "id": 4,
+        "login": "mark",
+        "username": "mark"
+      },
+      "completed_at": "2026-10-30T21:05:00+01:00",
+      "conclusion": "success",
+      "display_title": "Retry failed webhook posts once",
+      "event": "push",
+      "head_branch": "main",
+      "head_sha": "c433254977de5ed9ce3e3840baae76c3eb02f334",
+      "html_url": "https://git.example.com/acme/beacon/actions/runs/411",
+      "id": 1411,
+      "path": "ci.yml@refs/heads/main",
+      "run_attempt": 1,
+      "run_number": 411,
+      "started_at": "2026-10-30T21:01:00+01:00",
+      "status": "completed",
+      "url": "https://git.example.com/api/v1/repos/acme/beacon/actions/runs/1411"
+    },
+    {
+      "actor": {
+        "avatar_url": "https://git.example.com/avatars/mark",
+        "email": "mark@example.com",
+        "full_name": "Mark",
+        "id": 4,
+        "login": "mark",
+        "username": "mark"
+      },
+      "completed_at": "2026-10-25T23:04:00+01:00",
+      "conclusion": "failure",
+      "display_title": "Dark theme for status pages",
+      "event": "push",
+      "head_branch": "dark-theme",
+      "head_sha": "c433254977de5ed9ce3e3840baae76c3eb02f334",
+      "html_url": "https://git.example.com/acme/beacon/actions/runs/410",
+      "id": 1410,
+      "path": "ci.yml@refs/heads/dark-theme",
+      "run_attempt": 1,
+      "run_number": 410,
+      "started_at": "2026-10-25T23:00:00+01:00",
+      "status": "completed",
+      "url": "https://git.example.com/api/v1/repos/acme/beacon/actions/runs/1410"
+    }
+  ]
+}
+

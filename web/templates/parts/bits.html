@@ -1,0 +1,52 @@
+{{define "tierPill"}}<span class="tp {{tierClass .}}">{{icon (tierIcon .)}}{{tierLabel .}}</span>{{end}}
+
+{{define "chip"}}<span class="chip lv-{{.Level}}">{{icon .Icon}}<span>{{.Text}}</span></span>{{end}}
+
+{{define "chipLink"}}{{if .Href}}<a class="chip lv-{{.Level}}" href="{{.Href}}">{{icon .Icon}}<span>{{.Text}}</span></a>{{else}}{{template "chip" .}}{{end}}{{end}}
+
+{{define "card"}}
+<article class="card-wrap {{tierClass .}}" data-live-card="{{.Slug}}" data-slug="{{.Slug}}" data-cat="{{.Category}}" data-hash="{{.Hash}}">
+  <a class="card" href="/p/{{.Slug}}">
+    <span class="tile">{{icon .Icon}}</span>
+    <h3 class="card-title"><span class="card-name">{{.Name}}</span>{{if .Auto}} <span class="tag">unsorted</span>{{end}}</h3>
+    {{template "tierPill" .}}
+    {{if loud .HeadlineLevel}}<span class="card-sum loud lv-{{.HeadlineLevel}}">{{icon (levelIcon .HeadlineLevel)}}<span><span class="sr">{{levelWord .HeadlineLevel}}: </span>{{.Headline}}</span></span>
+    {{else}}<span class="card-sum">{{.Summary}}</span>{{end}}
+    {{with .Signals}}<span class="chips">{{range signals . 5}}{{template "chip" .}}{{end}}{{with moreThan (len .) 5}}<span class="chip more" title="More on the project page">+{{.}}</span>{{end}}</span>{{end}}
+    <span class="card-foot">{{sparkline .Activity}}<span class="when">{{if .ActivityFromNotes}}{{if .LastActivity.IsZero}}No repo or notes yet{{else}}Notes updated {{ago .LastActivity}}{{end}}{{else if .LastActivity.IsZero}}No commits seen{{else}}Last commit {{ago .LastActivity}}{{end}}</span></span>
+  </a>
+</article>
+{{end}}
+
+{{define "need"}}{{$a := .A}}
+<a class="need lv-{{$a.Level}}" href="{{if $a.Href}}{{$a.Href}}{{else}}/p/{{$a.Project}}{{end}}">
+  <span class="need-top"><span class="verb">{{$a.Verb}}</span><span class="sr">{{levelWord $a.Level}}.</span>{{if $a.Heuristic}}<span class="tag notes">{{icon "notebook-pen"}}from notes</span>{{end}}</span>
+  <span class="need-text">{{mdText $a.Text}}</span>
+  <span class="need-proj"><span class="tile xs" data-cat="{{.Cat}}">{{icon $a.Icon}}</span><span>{{$a.ProjectName}}</span></span>
+  <span class="need-src">{{$a.Source}}{{if and (not $a.At.IsZero) (not (contains $a.Source " ago"))}}, {{ago $a.At}}{{end}}</span>
+</a>
+{{end}}
+
+{{define "idea"}}{{$it := .It}}{{$i := $it.I}}
+<article class="idea k-{{ident $i.Kind}}" id="idea-{{ident $i.ID}}" data-kind="{{$i.Kind}}" data-size="{{$i.Size}}" data-project="{{$i.Project}}" tabindex="-1">
+  {{if or $i.Kind $i.Size}}<div class="idea-head">
+    {{with $i.Kind}}<span class="kind">{{icon (kindIcon .)}}{{kindLabel .}}</span>{{end}}
+    {{with $i.Size}}<span class="size" title="Size: {{sizeLabel .}}">{{sizeLabel .}}</span>{{end}}
+  </div>{{end}}
+  <h3 class="idea-title">{{$i.Title}}</h3>
+  {{if .Show}}<a class="idea-proj" href="/p/{{$i.Project}}"><span class="tile xs" data-cat="{{$it.Cat}}">{{icon $i.Icon}}</span><span>{{$i.ProjectName}}</span></a>{{end}}
+  <p class="idea-pitch">{{md $i.Pitch}}</p>
+  {{with $i.Why}}<details class="why"><summary>{{icon "chevron-right" "chev"}}Why this idea</summary><p>{{md .}}</p></details>{{end}}
+  <div class="idea-foot">
+    {{if $i.FiledIssue}}{{if $i.FiledURL}}<a class="btn ok" href="{{$i.FiledURL}}">{{icon "circle-check"}}Filed as #{{$i.FiledIssue}}</a>{{else if $it.RepoURL}}<a class="btn ok" href="{{$it.RepoURL}}/issues/{{$i.FiledIssue}}">{{icon "circle-check"}}Filed as #{{$i.FiledIssue}}</a>{{else}}<span class="btn ok">{{icon "circle-check"}}Filed as #{{$i.FiledIssue}}</span>{{end}}
+    {{else if $i.ExistingIssue}}{{$word := "Already"}}{{if eq $i.Source "issue"}}{{$word = "Issue"}}{{end}}{{if $i.URL}}<a class="btn quiet" href="{{$i.URL}}">{{icon "circle-dot"}}{{$word}} #{{$i.ExistingIssue}}</a>{{else if $it.RepoURL}}<a class="btn quiet" href="{{$it.RepoURL}}/issues/{{$i.ExistingIssue}}">{{icon "circle-dot"}}{{$word}} #{{$i.ExistingIssue}}</a>{{else}}<span class="btn quiet">{{icon "circle-dot"}}{{$word}} #{{$i.ExistingIssue}}</span>{{end}}
+    {{else if $i.FileURL}}<a class="btn" href="{{$i.FileURL}}" target="_blank" rel="noopener">{{icon "list-plus"}}File as issue<span class="sr"> (opens {{$it.Forge}} in a new tab)</span></a>
+    {{else}}<span class="muted small">No {{with $it.Forge}}{{.}} {{end}}repo to file against</span>{{end}}
+  </div>
+</article>
+{{end}}
+
+{{define "issueList"}}<ul class="issues">{{range .}}
+  <li><a class="issue-link" href="{{.URL}}"><span class="mono num">#{{.Number}}</span> <span>{{.Title}}</span></a>
+    <span class="issue-meta">{{with .Labels}}<span class="labels">{{range .}}<span class="label"><svg class="ldot" viewBox="0 0 10 10" aria-hidden="true" focusable="false"><circle cx="5" cy="5" r="4" fill="{{labelColor .Color}}"/></svg>{{.Name}}</span>{{end}}</span>{{end}}<span class="meta">{{icon "user"}}<span>{{.Author}}, opened {{ago .CreatedAt}}{{if .Comments}}, {{plural .Comments "comment" "comments"}}{{end}}</span></span></span></li>
+{{end}}</ul>{{end}}

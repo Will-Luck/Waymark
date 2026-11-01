@@ -1,0 +1,66 @@
+[
+  {
+    "name": "2025-01-05-old-idea.md",
+    "path": "docs/plans/2025-01-05-old-idea.md",
+    "sha": "3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+    "size": 640,
+    "url": "https://api.github.com/repos/acme/app/contents/docs/plans/2025-01-05-old-idea.md?ref=main",
+    "html_url": "https://github.com/acme/app/blob/main/docs/plans/2025-01-05-old-idea.md",
+    "git_url": "https://api.github.com/repos/acme/app/git/blobs/3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+    "download_url": "https://raw.githubusercontent.com/acme/app/main/docs/plans/2025-01-05-old-idea.md",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/acme/app/contents/docs/plans/2025-01-05-old-idea.md?ref=main",
+      "git": "https://api.github.com/repos/acme/app/git/blobs/3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b",
+      "html": "https://github.com/acme/app/blob/main/docs/plans/2025-01-05-old-idea.md"
+    }
+  },
+  {
+    "name": "2026-10-12-importer.md",
+    "path": "docs/plans/2026-10-12-importer.md",
+    "sha": "4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c",
+    "size": 812,
+    "url": "https://api.github.com/repos/acme/app/contents/docs/plans/2026-10-12-importer.md?ref=main",
+    "html_url": "https://github.com/acme/app/blob/main/docs/plans/2026-10-12-importer.md",
+    "git_url": "https://api.github.com/repos/acme/app/git/blobs/4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c",
+    "download_url": "https://raw.githubusercontent.com/acme/app/main/docs/plans/2026-10-12-importer.md",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/acme/app/contents/docs/plans/2026-10-12-importer.md?ref=main",
+      "git": "https://api.github.com/repos/acme/app/git/blobs/4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c",
+      "html": "https://github.com/acme/app/blob/main/docs/plans/2026-10-12-importer.md"
+    }
+  },
+  {
+    "name": "2026-10-20-sync",
+    "path": "docs/plans/2026-10-20-sync",
+    "sha": "5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d",
+    "size": 0,
+    "url": "https://api.github.com/repos/acme/app/contents/docs/plans/2026-10-20-sync?ref=main",
+    "html_url": "https://github.com/acme/app/tree/main/docs/plans/2026-10-20-sync",
+    "git_url": "https://api.github.com/repos/acme/app/git/trees/5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d",
+    "download_url": null,
+    "type": "dir",
+    "_links": {
+      "self": "https://api.github.com/repos/acme/app/contents/docs/plans/2026-10-20-sync?ref=main",
+      "git": "https://api.github.com/repos/acme/app/git/trees/5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d",
+      "html": "https://github.com/acme/app/tree/main/docs/plans/2026-10-20-sync"
+    }
+  },
+  {
+    "name": "README.md",
+    "path": "docs/plans/README.md",
+    "sha": "6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e",
+    "size": 120,
+    "url": "https://api.github.com/repos/acme/app/contents/docs/plans/README.md?ref=main",
+    "html_url": "https://github.com/acme/app/blob/main/docs/plans/README.md",
+    "git_url": "https://api.github.com/repos/acme/app/git/blobs/6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e",
+    "download_url": "https://raw.githubusercontent.com/acme/app/main/docs/plans/README.md",
+    "type": "file",
+    "_links": {
+      "self": "https://api.github.com/repos/acme/app/contents/docs/plans/README.md?ref=main",
+      "git": "https://api.github.com/repos/acme/app/git/blobs/6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e",
+      "html": "https://github.com/acme/app/blob/main/docs/plans/README.md"
+    }
+  }
+]

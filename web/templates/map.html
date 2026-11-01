@@ -1,0 +1,36 @@
+{{define "main"}}{{$v := .Data}}
+<div class="map-page">
+  <header class="wrap page-head">
+    <h1 class="page-title">{{icon "orbit"}}Map</h1>
+    <p class="lead">Every project as a star. <b>Colour and the corner badge show its tier</b>; the icon inside is the project. Size shows the last 12 weeks of commits, lines are relations. <span hidden data-js-show>Drag a star to move it. Select one to open the project.</span></p>
+  </header>
+  <aside class="legend wrap" aria-label="Legend">
+      <h2 class="legend-h">Tiers</h2>
+      <ul>
+        {{range tiers}}<li class="{{tierClass .}}"><span class="legend-dot" aria-hidden="true">{{icon (tierIcon .)}}</span>{{tierLabel .}}</li>{{end}}
+      </ul>
+      <p class="small muted">Bigger star, more commits.</p>
+    </aside>
+  <div class="map-stage">
+    <div class="map-scroll" data-map>
+    <svg class="map" id="map-svg" viewBox="0 0 {{$v.W}} {{$v.H}}" role="group" aria-label="Project map. Each link opens a project.">
+      <g class="anchors" aria-hidden="true">{{range $v.Anchors}}<text class="cat-label" data-cat="{{.Key}}" x="{{.LX}}" y="{{.LY}}">{{.Label}}</text>{{end}}</g>
+      <g class="edges" aria-hidden="true">{{range $v.Edges}}<g class="edge" data-from="{{.From}}" data-to="{{.To}}"><line x1="{{.X1}}" y1="{{.Y1}}" x2="{{.X2}}" y2="{{.Y2}}"></line><title>{{.From}} {{relWord .Kind true}} {{.To}}</title></g>{{end}}</g>
+      <g class="edge-labels" aria-hidden="true"></g>
+      <g class="nodes">{{range $v.Nodes}}<a class="node {{.TierClass}}" href="/p/{{.ID}}" data-id="{{.ID}}" transform="translate({{.X}} {{.Y}})" aria-label="{{.Name}}, {{.TierLabel}}"><circle class="halo" r="{{.R}}"></circle><circle class="body" r="{{.R}}"></circle><use href="#i-{{iconName .Icon}}" x="{{.IO}}" y="{{.IO}}" width="{{.IS}}" height="{{.IS}}"></use><g class="node-tier" transform="translate({{.BX}} {{.BX}})"><circle r="{{.BR}}"></circle><use href="#i-{{tierIcon .Tier}}" x="{{.BO}}" y="{{.BO}}" width="{{.BI}}" height="{{.BI}}"></use></g><text class="node-label" y="{{.LY}}">{{.Short}}</text><title>{{.Name}} ({{.TierLabel}})</title></a>{{end}}</g>
+    </svg>
+    </div>
+  </div>
+  <script type="application/json" id="graph">{{$v.JSON}}</script>
+
+  <section class="wrap block map-list" aria-labelledby="ml-h">
+    <h2 id="ml-h" class="sec-h">{{icon "layers"}}By category</h2>
+    <div class="ml-grid">
+      {{range $v.Groups}}<section class="ml-group" aria-label="{{.Label}}">
+        <h3 class="ml-h" data-cat="{{.Key}}"><span class="tile xs">{{icon .Icon}}</span>{{.Label}} <span class="count">{{len .Projects}}</span></h3>
+        <ul>{{range .Projects}}<li><a href="/p/{{.Slug}}">{{.Name}}</a> {{template "tierPill" .}}</li>{{end}}</ul>
+      </section>{{end}}
+    </div>
+  </section>
+</div>
+{{end}}

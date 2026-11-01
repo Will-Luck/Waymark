@@ -1,0 +1,9 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/Will-Luck/waymark/security/advisories/new
+    about: |
+      Please report security vulnerabilities privately via GitHub's security advisories rather than opening a public issue.
+  - name: Configuration reference
+    url: https://github.com/Will-Luck/waymark/blob/main/docs/configuration.md
+    about: Every config key, its default and an example

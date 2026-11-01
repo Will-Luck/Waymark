@@ -1,0 +1,75 @@
+[
+  {
+    "commit": {
+      "created": "2026-10-29T23:00:00+01:00",
+      "sha": "ea606c4eb505f775009a4e7f05a06a519bbfa93a",
+      "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/ea606c4eb505f775009a4e7f05a06a519bbfa93a"
+    },
+    "id": "ea606c4eb505f775009a4e7f05a06a519bbfa93a",
+    "message": "",
+    "name": "v2.4.0",
+    "tarball_url": "https://git.example.com/acme/beacon/archive/v2.4.0.tar.gz",
+    "zipball_url": "https://git.example.com/acme/beacon/archive/v2.4.0.zip"
+  },
+  {
+    "commit": {
+      "created": "2026-10-19T23:00:00+01:00",
+      "sha": "f5757ec657a2540d0d345b8552bf217cf4508644",
+      "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/f5757ec657a2540d0d345b8552bf217cf4508644"
+    },
+    "id": "f5757ec657a2540d0d345b8552bf217cf4508644",
+    "message": "",
+    "name": "v2.3.1",
+    "tarball_url": "https://git.example.com/acme/beacon/archive/v2.3.1.tar.gz",
+    "zipball_url": "https://git.example.com/acme/beacon/archive/v2.3.1.zip"
+  },
+  {
+    "commit": {
+      "created": "2026-09-27T23:00:00+01:00",
+      "sha": "a86d49944dbb6558db08615393896d9d87c3bdfa",
+      "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/a86d49944dbb6558db08615393896d9d87c3bdfa"
+    },
+    "id": "a86d49944dbb6558db08615393896d9d87c3bdfa",
+    "message": "",
+    "name": "v2.3.0",
+    "tarball_url": "https://git.example.com/acme/beacon/archive/v2.3.0.tar.gz",
+    "zipball_url": "https://git.example.com/acme/beacon/archive/v2.3.0.zip"
+  },
+  {
+    "commit": {
+      "created": "2026-08-22T23:00:00+01:00",
+      "sha": "e9e5408386f207b067f9efbc11efad1e1ff9db1b",
+      "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/e9e5408386f207b067f9efbc11efad1e1ff9db1b"
+    },
+    "id": "e9e5408386f207b067f9efbc11efad1e1ff9db1b",
+    "message": "",
+    "name": "v2.2.0",
+    "tarball_url": "https://git.example.com/acme/beacon/archive/v2.2.0.tar.gz",
+    "zipball_url": "https://git.example.com/acme/beacon/archive/v2.2.0.zip"
+  },
+  {
+    "commit": {
+      "created": "2026-07-14T23:00:00+01:00",
+      "sha": "2f77c3fcda7e58a28d1d26bf0e515ce20757aa29",
+      "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/2f77c3fcda7e58a28d1d26bf0e515ce20757aa29"
+    },
+    "id": "2f77c3fcda7e58a28d1d26bf0e515ce20757aa29",
+    "message": "",
+    "name": "v2.1.0",
+    "tarball_url": "https://git.example.com/acme/beacon/archive/v2.1.0.tar.gz",
+    "zipball_url": "https://git.example.com/acme/beacon/archive/v2.1.0.zip"
+  },
+  {
+    "commit": {
+      "created": "2026-06-14T23:00:00+01:00",
+      "sha": "7c089c4f2597fd7de72e32217d0c590f2ab4e8fe",
+      "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/7c089c4f2597fd7de72e32217d0c590f2ab4e8fe"
+    },
+    "id": "7c089c4f2597fd7de72e32217d0c590f2ab4e8fe",
+    "message": "",
+    "name": "v2.0.0",
+    "tarball_url": "https://git.example.com/acme/beacon/archive/v2.0.0.tar.gz",
+    "zipball_url": "https://git.example.com/acme/beacon/archive/v2.0.0.zip"
+  }
+]
+

@@ -1,0 +1,169 @@
+{{define "project-live"}}{{$v := .}}{{$p := .P}}
+<article class="proj" data-live-panels="{{$p.Slug}}" data-hash="{{$p.Hash}}">
+  <header class="phead {{tierClass $p}}" data-slug="{{$p.Slug}}" data-cat="{{$p.Category}}">
+    <span class="tile xl">{{icon $p.Icon}}</span>
+    <div class="phead-text">
+      <h1 class="pname">{{$p.Name}}</h1>
+      <p class="pmeta">{{template "tierPill" $p}}<span class="muted">{{$p.TierReason}}</span>{{if $p.Auto}}<span class="tag">unsorted</span>{{end}}</p>
+    </div>
+  </header>
+
+  <p class="headline lv-{{$p.HeadlineLevel}}">{{icon (levelIcon $p.HeadlineLevel)}}<span><span class="sr">{{levelWord $p.HeadlineLevel}}: </span>{{$p.Headline}}</span></p>
+  {{with $p.What}}<p class="what">{{.}}</p>{{else}}{{with $p.Summary}}<p class="what">{{.}}</p>{{end}}{{end}}
+
+  {{with $p.Hold}}<p class="callout {{if .Contradicted}}warn{{else}}hold{{end}}">{{icon (tierIcon $p)}}<span><b>{{tierLabel $p}} since {{date .Since}}.</b> {{.Reason}}{{if .Contradicted}} <b>{{plural .CommitsSince "commit" "commits"}} since then.</b>{{end}}</span></p>{{end}}
+
+  <div class="facts">
+    {{with $p.RunsOn}}<p class="fact">{{icon "server"}}<span><b>Runs on</b> {{.}}</span></p>{{end}}
+    {{with $p.Stack}}<p class="fact">{{icon "layers"}}<span><b>Stack</b> <span class="stack">{{range .}}<span class="mono-chip">{{.}}</span>{{end}}</span></span></p>{{end}}
+    {{with $p.Links}}<p class="links">{{range .}}<a class="btn" href="{{.URL}}" rel="noopener">{{icon (linkIcon .Kind)}}{{.Label}}</a>{{end}}</p>{{end}}
+  </div>
+
+  {{with $p.Signals}}<p class="chips big" aria-label="Signals">{{range .}}{{template "chipLink" .}}{{end}}</p>{{end}}
+
+  <div class="panels">
+    {{if $v.Runs}}
+    <section class="panel" aria-labelledby="pn-runs">
+      <h2 id="pn-runs" class="panel-h">{{icon "server"}}Where it runs</h2>
+      {{with $v.Deploy}}
+      <div class="deploy">
+        <p class="state st-{{stateClass .State}}"><span class="sdot" aria-hidden="true"></span><b>{{stateWord .State}}</b>{{with .Container}} <span class="mono">{{.}}</span>{{end}}{{with .Where}} on {{.}}{{end}}</p>
+        <dl class="kv">
+          {{with .Status}}<dt>Status</dt><dd>{{.}}</dd>{{end}}
+          <dt>Version</dt><dd class="mono">{{if .Version}}{{.Version}}{{else}}unknown{{end}}</dd>
+          {{with .Image}}<dt>Image</dt><dd class="mono">{{.}}</dd>{{end}}
+          {{if not .CheckedAt.IsZero}}<dt>Checked</dt><dd>{{ago .CheckedAt}}</dd>{{end}}
+        </dl>
+      </div>
+      {{end}}
+      {{range $p.Probes}}{{if .NotProbed}}
+      <div class="probe skipped">
+        <p><b>{{.Label}}</b> <span class="updown">{{icon "circle-slash"}}Not probed</span></p>
+        <p class="muted small"><a href="{{.URL}}" rel="noopener">{{.URL}}</a>, {{.NotProbed}}</p>
+      </div>{{else}}
+      <div class="probe {{if .Up}}up{{else}}down{{end}}">
+        <div class="probe-top">
+          <span class="arc" data-pct="{{pctf .UptimePct}}" role="img" aria-label="{{.UptimePct}}% up in the last 24 hours"><span class="arc-num">{{.UptimePct}}<small>%</small></span></span>
+          <div class="probe-text">
+            <p><b>{{.Label}}</b> <span class="updown">{{if .Up}}{{icon "check"}}Up{{else}}{{icon "octagon-alert"}}Down{{end}}</span>{{if .Up}} <span class="mono">{{.LatencyMS}} ms</span>{{else if .Code}} <span class="mono">HTTP {{.Code}}</span>{{end}}</p>
+            <p class="muted small"><a href="{{.URL}}" rel="noopener">{{.URL}}</a>, checked {{ago .CheckedAt}}</p>
+          </div>
+        </div>
+        <div class="ubar" role="img" aria-label="Last 24 hours: {{.UptimePct}}% up">{{range uptimeCells .History}}<span class="u {{.Class}}" title="{{.Tip}}"></span>{{end}}</div>
+        <p class="ubar-scale" aria-hidden="true"><span>24 h ago</span><span>now</span></p>
+      </div>
+      {{end}}{{end}}
+    </section>
+    {{end}}
+
+    {{if or $p.Releases (and $p.Deploy $p.Deploy.Lagging)}}
+    <section class="panel" aria-labelledby="pn-ver">
+      <h2 id="pn-ver" class="panel-h">{{icon "tags"}}Versions</h2>
+      {{with $p.Deploy}}{{if .Lagging}}<p class="callout warn">{{icon "circle-arrow-up"}}<span><b>{{.Latest}}</b> is ready; production runs <b>{{if .Version}}{{.Version}}{{else}}an unknown version{{end}}</b>.</span></p>{{end}}{{end}}
+      <ol class="vline">
+        {{range $p.Releases}}<li class="{{if .Deployed}}running{{end}}"><span class="vdot" aria-hidden="true"></span><a class="mono vtag" href="{{.URL}}">{{.Tag}}</a>{{if .Deployed}} <span class="badge good">{{icon "package-check"}}running</span>{{end}}{{with .Title}} <span class="vtitle">{{.}}</span>{{end}} <span class="muted small">{{date .Date}}</span></li>{{end}}
+      </ol>
+      {{with $p.Repo}}{{if .CommitsSinceTag}}<p class="muted small">{{icon "git-commit-horizontal"}}{{plural .CommitsSinceTag "commit" "commits"}} since {{.LatestTag}}</p>{{end}}{{end}}
+    </section>
+    {{end}}
+
+    {{with $v.Needs}}
+    <section class="panel needs-panel" aria-labelledby="pn-needs">
+      <h2 id="pn-needs" class="panel-h">{{icon "hand"}}Waiting on you</h2>
+      <div class="needs-stack">{{range .}}{{template "need" .}}{{end}}</div>
+    </section>
+    {{end}}
+
+    {{if $v.Next}}
+    <section class="panel" aria-labelledby="pn-next">
+      <h2 id="pn-next" class="panel-h">{{icon "list-todo"}}Next up</h2>
+      {{with $p.Unreleased}}{{if or .Count .Items}}
+      <h3 class="sub">{{icon "list-plus"}}{{plural .Count "unreleased change" "unreleased changes"}}{{with .LastVersion}} <span class="muted small">since {{.}}</span>{{end}}</h3>
+      <ul class="md-list">{{range .Items}}<li>{{md .}}</li>{{end}}</ul>
+      {{if gt .Count (len .Items)}}<p class="small"><a href="{{.URL}}">{{plural .Count "change" "changes"}} in the changelog</a></p>{{else if .URL}}<p class="small"><a href="{{.URL}}">Open the changelog</a></p>{{end}}
+      {{end}}{{end}}
+      {{range $p.Plans}}
+      <div class="plan">
+        <p class="plan-title">{{icon "list-checks"}}<span><a href="{{.URL}}">{{.Title}}</a> <span class="muted small">{{date .Date}}</span></span></p>
+        <div class="bar" data-pct="{{pct .Done .Total}}" role="img" aria-label="{{.Done}} of {{.Total}} steps done"><span></span></div>
+        <p class="plan-num mono small">{{.Done}}/{{.Total}} done, {{pct .Done .Total}}%</p>
+      </div>
+      {{end}}
+    </section>
+    {{end}}
+
+    {{if or $v.Issues $v.MirrorIssues}}
+    <section class="panel" aria-labelledby="pn-issues">
+      <h2 id="pn-issues" class="panel-h">{{icon "circle-dot"}}Open issues</h2>
+      {{with $v.Issues}}{{template "issueList" .}}{{end}}
+      {{with $p.Repo}}{{if gt .OpenIssues (len $v.Issues)}}<p class="small"><a href="{{.HTMLURL}}/issues">All {{.OpenIssues}} open issues on {{$p.Forge}}</a></p>{{end}}{{end}}
+      {{with $v.MirrorIssues}}<h3 class="sub">{{icon "github"}}{{$v.MirrorForge}}</h3>{{template "issueList" .}}{{end}}
+    </section>
+    {{end}}
+
+    {{with $p.PRs}}
+    <section class="panel" aria-labelledby="pn-prs">
+      <h2 id="pn-prs" class="panel-h">{{icon "git-pull-request"}}Pull requests</h2>
+      {{template "issueList" .}}
+    </section>
+    {{end}}
+
+    {{with $p.CI}}
+    <section class="panel" aria-labelledby="pn-ci">
+      <h2 id="pn-ci" class="panel-h">{{icon "workflow"}}CI</h2>
+      <ul class="ci">{{range .}}
+        <li class="ci-{{ciWord . | ident}}">{{icon (ciIcon .)}}<a href="{{.URL}}" class="ci-title">{{.Title}}</a><span class="ci-meta"><b class="ci-word">{{ciWord .}}</b> on <span class="mono">{{.Branch}}</span>, {{ago .StartedAt}}</span></li>
+      {{end}}</ul>
+    </section>
+    {{end}}
+
+    {{with $p.Commits}}
+    <section class="panel" aria-labelledby="pn-commits">
+      <h2 id="pn-commits" class="panel-h">{{icon "git-commit-horizontal"}}Recent commits</h2>
+      <ul class="commits">{{range .}}
+        <li><a class="mono sha" href="{{.URL}}">{{.Short}}</a><span class="msg">{{.Message}}</span><span class="meta">{{.Author}}, {{ago .Date}}</span></li>
+      {{end}}</ul>
+    </section>
+    {{end}}
+
+    {{with $v.Notes}}
+    <section class="panel" aria-labelledby="pn-notes">
+      <h2 id="pn-notes" class="panel-h">{{icon "notebook-pen"}}{{$v.NotesLabel}}</h2>
+      {{range $n := .}}
+      <div class="note" id="note-{{ident .File}}">
+        {{with .IndexLine}}<p class="note-line">{{md .}}</p>{{end}}
+        <p class="muted small">{{.File}}, written {{ago .Modified}}</p>
+        {{if .Stale}}<p class="callout warn">{{icon "triangle-alert"}}<span><b>Possibly stale.</b> {{.StaleReason}}</span></p>{{end}}
+        {{with .Description}}<details class="why"><summary>{{icon "chevron-right" "chev"}}What the note says</summary><p>{{md .}}</p></details>{{end}}{{with .Head}}
+        <div class="note-body">{{md .}}</div>{{end}}{{with .More}}
+        <details class="why"><summary>{{icon "chevron-right" "chev"}}{{plural $n.MoreLines "more line" "more lines"}}</summary><div class="note-body">{{md .}}</div></details>{{end}}
+      </div>
+      {{end}}
+    </section>
+    {{end}}
+
+    {{with $v.Related}}
+    <section class="panel" aria-labelledby="pn-rel">
+      <h2 id="pn-rel" class="panel-h">{{icon "share-2"}}Related</h2>
+      <ul class="rels">{{range .}}
+        <li>{{if .Known}}<a class="rel" href="/p/{{.Slug}}">{{else}}<span class="rel">{{end}}<span class="rel-word">{{.Word}}</span><span class="tile xs" data-cat="{{.Cat}}">{{icon .Icon}}</span><span>{{.Name}}</span>{{if .Known}}</a>{{else}}</span>{{end}}</li>
+      {{end}}</ul>
+    </section>
+    {{end}}
+
+    {{with $v.Sources}}
+    <section class="panel" aria-labelledby="pn-src">
+      <h2 id="pn-src" class="panel-h">{{icon "database"}}Sources</h2>
+      <ul class="srcs">{{range .}}<li>{{icon "history"}}<span><b>{{.Label}}</b> {{ago .At}}</span></li>{{end}}</ul>
+    </section>
+    {{end}}
+
+    {{with $v.Ideas}}
+    <section class="panel wide" aria-labelledby="pn-ideas">
+      <h2 id="pn-ideas" class="panel-h">{{icon "lightbulb"}}Ideas <span class="count">{{len .}}</span></h2>
+      <div class="idea-grid">{{range .}}{{template "idea" (dict "It" . "Show" false)}}{{end}}</div>
+    </section>
+    {{end}}
+  </div>
+</article>
+{{end}}

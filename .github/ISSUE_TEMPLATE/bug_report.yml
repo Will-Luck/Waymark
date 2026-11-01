@@ -1,0 +1,93 @@
+name: Bug report
+description: Something isn't working as expected
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. **All fields below are optional**: fill in what you can and leave blank what you can't. A report with some data is more useful than no report at all.
+
+        **Remove every token** from anything you paste. Waymark never prints one, but a config file or a `docker run` line can hold one.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the behaviour you observed
+    validations:
+      required: false
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: waymark version
+      description: The first log line says it ("waymark v0.2.0 listening on ...").
+      placeholder: e.g. v0.2.0, or "latest" if on the :latest tag
+    validations:
+      required: false
+
+  - type: dropdown
+    id: install-source
+    attributes:
+      label: How you run it
+      options:
+        - GHCR (ghcr.io/will-luck/waymark)
+        - Docker Hub (willluck/waymark)
+        - Release binary
+        - Built from source
+        - Other
+        - Not sure
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: forges
+    attributes:
+      label: Forge types in your config
+      options:
+        - label: Gitea
+        - label: Forgejo (or Codeberg)
+        - label: GitHub
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Your config, tokens removed
+      description: waymark.yml (or the environment variables you set). Replace each token with `REDACTED`.
+      render: yaml
+    validations:
+      required: false
+
+  - type: input
+    id: host-os
+    attributes:
+      label: Host OS / platform
+      placeholder: e.g. Ubuntu 24.04, Unraid 7.x, TrueNAS Scale
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs
+      description: |
+        Paste the container logs (`docker logs <container>`) or the output of `/healthz`. Drag-and-drop log files works too.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Screenshots, reproduction steps
+    validations:
+      required: false

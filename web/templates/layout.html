@@ -1,0 +1,90 @@
+{{define "layout"}}<!doctype html>
+<html lang="en-GB"{{with .Theme}} data-theme="{{.}}"{{end}}>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Title}}</title>
+{{with .Desc}}<meta name="description" content="{{.}}">
+{{end}}<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#0f121a" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f8f6ee" media="(prefers-color-scheme: light)">
+<link rel="preload" href="{{.Static}}/fonts/atkinson-hyperlegible-next-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="{{.Static}}/fonts/atkinson-hyperlegible-next-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="{{.Static}}/css/app.css">
+<link rel="stylesheet" href="{{.DynCSS}}">
+<link rel="icon" href="{{.Static}}/favicon.svg" type="image/svg+xml">
+<script type="module" src="{{.Static}}/js/app.js"></script>
+<script type="speculationrules">{"prerender":[{"where":{"href_matches":"/p/*"},"eagerness":"moderate"}]}</script>
+</head>
+<body class="{{.Class}}" data-tz="{{with .Site.Meta.Timezone}}{{.}}{{else}}UTC{{end}}">
+{{.Sprite}}
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-head">
+  <div class="head-inner">
+    <a class="brand" href="/" aria-label="{{.Brand}}, overview">
+      <svg class="mark" viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+        <circle cx="16" cy="16" r="13.5" fill="none" stroke="currentColor" stroke-width="1.9"/>
+        <path d="M16 6.5 L18.1 13.9 L25.5 16 L18.1 18.1 L16 25.5 L13.9 18.1 L6.5 16 L13.9 13.9 Z" fill="currentColor"/>
+        <circle cx="24.2" cy="7.8" r="1.4" fill="currentColor"/>
+      </svg>
+      <span class="brand-word">{{.Brand}}</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <ul>
+        <li><a href="/"{{if eq .Nav "overview"}} aria-current="page"{{end}}>{{icon "layout-dashboard"}}<span>Overview</span></a></li>
+        {{if .Site.Meta.Ideas}}<li><a href="/ideas"{{if eq .Nav "ideas"}} aria-current="page"{{end}}>{{icon "lightbulb"}}<span>Ideas</span></a></li>{{end}}
+        <li><a href="/ships"{{if eq .Nav "ships"}} aria-current="page"{{end}}>{{icon "ship"}}<span>Ship log</span></a></li>
+        <li><a href="/map"{{if eq .Nav "map"}} aria-current="page"{{end}}>{{icon "orbit"}}<span>Map</span></a></li>
+      </ul>
+    </nav>
+    <div class="head-tools">
+      <button type="button" class="status" id="live-status" popovertarget="src-pop" data-status="{{if .Failing}}warn{{else}}ok{{end}}" aria-describedby="live-sr">
+        <span class="dot" aria-hidden="true"></span>
+        <span class="status-word" data-status-word>{{if .Failing}}{{template "failWord" .Failing}}{{else}}Live{{end}}</span>
+        <span class="status-time">updated <time id="live-time" datetime="{{iso .Site.GeneratedAt}}" data-ago data-ago-fast>{{agoText .Site.GeneratedAt}}</time></span>
+      </button>
+      <span class="sr" id="live-sr">Source status. Opens a list of every source and its age.</span>
+      <div id="src-pop" class="pop src-pop" popover>
+        <h2 class="pop-h">{{icon "database"}}Sources</h2>
+        <ul class="src-list" data-src-list>
+          {{range .Sources}}{{template "srcRow" .}}{{end}}
+        </ul>
+      </div>
+      <button type="button" class="search-btn" data-palette-open data-js-only aria-label="Search" aria-keyshortcuts="Control+K Meta+K /">
+        {{icon "search"}}<span class="search-word">Search</span><kbd data-kbd>Ctrl K</kbd>
+      </button>
+      <button type="button" class="icon-btn theme-btn" data-theme-toggle data-js-only aria-label="Switch to light theme">
+        {{icon "sun" "when-dark"}}{{icon "moon" "when-light"}}
+      </button>
+    </div>
+  </div>
+</header>
+{{if .Site.Meta.Demo}}<p class="demo-banner" role="note">{{icon "flask-conical"}}<span><b>Demo data.</b> An invented team and its projects, served by a built-in fake forge.</span></p>
+{{end}}<main id="main" tabindex="-1">
+{{template "main" .}}
+</main>
+<footer class="site-foot">
+  <div class="wrap foot-inner">
+    <p class="foot-brand"><b>{{.Brand}}</b> <span class="mono">{{.Version}}</span>. Generated {{ago .Site.GeneratedAt}}, from the work itself: nothing here is typed in by hand.</p>
+    <ul class="foot-src" aria-label="Sources and their ages">
+      {{range .Sources}}<li class="{{if .OK}}ok{{else}}bad{{end}}">{{if .OK}}{{icon "check"}}{{else}}{{icon "octagon-alert"}}{{end}}<span><b>{{.Label}}</b> {{if not .OK}}failing, {{end}}{{ago .RefreshedAt}}</span></li>{{end}}
+    </ul>
+  </div>
+</footer>
+<dialog id="palette" class="palette" aria-label="Search and commands">
+  <div class="pal-row">
+    {{icon "search"}}
+    <input id="pal-q" type="text" role="combobox" aria-expanded="true" aria-controls="pal-list" aria-autocomplete="list" autocomplete="off" spellcheck="false" placeholder="Search projects, ideas, issues and commands" aria-label="Search">
+    <kbd>Esc</kbd>
+  </div>
+  <ul id="pal-list" class="pal-list" role="listbox" aria-label="Results"></ul>
+  <p class="pal-foot"><kbd>↑</kbd> <kbd>↓</kbd> move <kbd>Enter</kbd> open <kbd>Esc</kbd> close</p>
+</dialog>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+</body>
+</html>
+{{end}}
+
+{{define "failWord"}}{{if eq (len .) 1}}{{range .}}{{.Label}} failing{{end}}{{else}}{{len .}} sources failing{{end}}{{end}}
+
+{{define "srcRow"}}<li class="{{if .OK}}ok{{else}}bad{{end}}">{{if .OK}}{{icon "check"}}{{else}}{{icon "octagon-alert"}}{{end}}<span><b>{{.Label}}</b> {{if .OK}}refreshed{{else}}failing, last good{{end}} {{ago .RefreshedAt}}{{with .Error}}<span class="src-err">{{.}}</span>{{end}}{{with .Note}}<span class="src-note">{{.}}</span>{{end}}</span></li>{{end}}

@@ -1,0 +1,51 @@
+{{define "main"}}{{$v := .Data}}{{$h := $v.Heat}}
+<div class="wrap">
+  <header class="page-head">
+    <h1 class="page-title">{{icon "ship"}}Ship log</h1>
+    <ul class="ship-stats">
+      <li>{{icon "sigma"}}<span><b class="big-num">{{num $h.Total}}</b> commits in 53 weeks, on {{plural $h.Active "day" "days"}}</span></li>
+      {{if $h.Busiest.Count}}<li>{{icon "trophy"}}<span>Busiest day <b>{{$h.BusyDay}}</b>, {{plural $h.Busiest.Count "commit" "commits"}}</span></li>{{end}}
+      <li>{{icon "flame"}}<span>Current streak <b>{{plural $h.Streak "day" "days"}}</b></span></li>
+    </ul>
+  </header>
+
+  {{if $h.Cells}}
+  <section class="block heat-sec" aria-labelledby="heat-h">
+    <h2 id="heat-h" class="sec-h">{{icon "calendar-days"}}Commits per day</h2>
+    <div class="heat-scroll" data-heat>
+      <div class="heat-frame">
+        <span class="heat-corner" aria-hidden="true"></span>
+        <div class="heat-months" aria-hidden="true">{{range $h.Months}}<span>{{.}}</span>{{end}}</div>
+        <div class="heat-days" aria-hidden="true"><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span><span></span></div>
+        <div class="heat" role="group" aria-label="Commits per day for 53 weeks, Monday first. Use the arrow keys to move between days.">{{range $h.Cells}}{{if .Pad}}<span class="hc pad"></span>{{else}}<span class="hc l{{.Level}}{{if .Today}} today{{end}}" role="img" tabindex="{{if .Today}}0{{else}}-1{{end}}" title="{{.Tip}}" aria-label="{{.Tip}}"></span>{{end}}{{end}}</div>
+      </div>
+    </div>
+    <div class="heat-foot">
+      <p class="heat-readout" data-heat-readout aria-live="polite">{{with $h.Busiest.Tip}}Busiest: {{.}}{{end}}</p>
+      <p class="heat-legend" aria-hidden="true">Less<span class="hc l0"></span><span class="hc l1"></span><span class="hc l2"></span><span class="hc l3"></span><span class="hc l4"></span>More</p>
+    </div>
+  </section>
+  {{end}}
+
+  <section class="block releases" aria-labelledby="rel-h">
+    <h2 id="rel-h" class="sec-h">{{icon "tag"}}Releases <span class="count">{{len .Site.Releases}}</span></h2>
+    {{range $v.Months}}
+    <section class="month" aria-label="{{.Label}}">
+      <h3 class="month-h">{{.Label}} <span class="count">{{len .Releases}}</span></h3>
+      <ol class="rel-line">
+        {{range .Releases}}<li class="rel{{if .Deployed}} running{{end}}">
+          <span class="tile sm" data-cat="{{.Category}}">{{icon .Icon}}</span>
+          <div class="rel-body">
+            <p class="rel-top"><a class="rel-name" href="/p/{{.Project}}">{{.ProjectName}}</a><a class="mono vtag" href="{{.URL}}">{{.Tag}}</a>{{if .Deployed}}<span class="badge good">{{icon "package-check"}}running</span>{{end}}</p>
+            {{with .Title}}<p class="rel-title">{{.}}</p>{{end}}
+          </div>
+          <time class="rel-date" datetime="{{iso .Date}}">{{date .Date}}</time>
+        </li>{{end}}
+      </ol>
+    </section>
+    {{else}}
+    <p class="muted">No releases in the last 18 months.</p>
+    {{end}}
+  </section>
+</div>
+{{end}}

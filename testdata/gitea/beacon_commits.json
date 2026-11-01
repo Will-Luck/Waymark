@@ -1,0 +1,1475 @@
+[
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-10-31T18:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-10-31T18:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Show incident duration on the status page\n",
+      "tree": {
+        "sha": "a29a428126a048c96eaddb4730e7d74d4f2746a5"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-10-31T18:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/c433254977de5ed9ce3e3840baae76c3eb02f334",
+    "parents": [
+      {
+        "sha": "aa76bf7efcda93b0aecaf83d13215e0e48c6c208"
+      }
+    ],
+    "sha": "c433254977de5ed9ce3e3840baae76c3eb02f334",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/c433254977de5ed9ce3e3840baae76c3eb02f334"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-10-30T21:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "committer": {
+        "date": "2026-10-30T21:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "message": "Retry failed webhook posts once\n",
+      "tree": {
+        "sha": "f1193e2edc9677a4df95da6cd1e01aca452765cc"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "created": "2026-10-30T21:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/aa76bf7efcda93b0aecaf83d13215e0e48c6c208",
+    "parents": [
+      {
+        "sha": "8d467f6dd0bb384c675e1e8416c46422bff6c57b"
+      }
+    ],
+    "sha": "aa76bf7efcda93b0aecaf83d13215e0e48c6c208",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/aa76bf7efcda93b0aecaf83d13215e0e48c6c208"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-10-30T03:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-10-30T03:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Tidy the alert e-mail template\n",
+      "tree": {
+        "sha": "22b0c4a5644c3f0b53997e3e0b924c85b55ebba9"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-10-30T03:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/8d467f6dd0bb384c675e1e8416c46422bff6c57b",
+    "parents": [
+      {
+        "sha": "ea606c4eb505f775009a4e7f05a06a519bbfa93a"
+      }
+    ],
+    "sha": "8d467f6dd0bb384c675e1e8416c46422bff6c57b",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/8d467f6dd0bb384c675e1e8416c46422bff6c57b"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-10-29T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-10-29T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Release v2.4.0\n",
+      "tree": {
+        "sha": "b082e3f19988f24a149d8b90935d83fee237da27"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-10-29T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/ea606c4eb505f775009a4e7f05a06a519bbfa93a",
+    "parents": [
+      {
+        "sha": "9cc9fa7eb420f796a644be9bf9301ca4b9c04f2c"
+      }
+    ],
+    "sha": "ea606c4eb505f775009a4e7f05a06a519bbfa93a",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/ea606c4eb505f775009a4e7f05a06a519bbfa93a"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-10-28T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "committer": {
+        "date": "2026-10-28T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "message": "Group checks by region\n",
+      "tree": {
+        "sha": "04785ba93e2a32b9f3d82b38698f29482f1aff16"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "created": "2026-10-28T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/9cc9fa7eb420f796a644be9bf9301ca4b9c04f2c",
+    "parents": [
+      {
+        "sha": "ddb959fa7e020760e854895abcbb7a6ee0f5914e"
+      }
+    ],
+    "sha": "9cc9fa7eb420f796a644be9bf9301ca4b9c04f2c",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/9cc9fa7eb420f796a644be9bf9301ca4b9c04f2c"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-10-26T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-10-26T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Cache DNS lookups between checks\n",
+      "tree": {
+        "sha": "83bc34fcc50152b14cc705fcc18a791aa93147de"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-10-26T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/ddb959fa7e020760e854895abcbb7a6ee0f5914e",
+    "parents": [
+      {
+        "sha": "aa33b543eeff6b8ae03981f31430c17fc8c25814"
+      }
+    ],
+    "sha": "ddb959fa7e020760e854895abcbb7a6ee0f5914e",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/ddb959fa7e020760e854895abcbb7a6ee0f5914e"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-10-23T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-10-23T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Add per-check timeouts\n",
+      "tree": {
+        "sha": "d68ac1c696d7e8ad822aac54c327182b9b11692f"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-10-23T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/aa33b543eeff6b8ae03981f31430c17fc8c25814",
+    "parents": [
+      {
+        "sha": "f5757ec657a2540d0d345b8552bf217cf4508644"
+      }
+    ],
+    "sha": "aa33b543eeff6b8ae03981f31430c17fc8c25814",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/aa33b543eeff6b8ae03981f31430c17fc8c25814"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-10-19T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-10-19T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Release v2.3.1\n",
+      "tree": {
+        "sha": "a6052a20d01cbc0e9e3145398ac00ad903e4b79c"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-10-19T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/f5757ec657a2540d0d345b8552bf217cf4508644",
+    "parents": [
+      {
+        "sha": "2e4ba16a520677f3535e9fc9199f6899f8eb7891"
+      }
+    ],
+    "sha": "f5757ec657a2540d0d345b8552bf217cf4508644",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/f5757ec657a2540d0d345b8552bf217cf4508644"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-10-18T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-10-18T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Update dependencies\n",
+      "tree": {
+        "sha": "ec7f5a4fcdcba71f7ee3d902e7167abdc32a0b23"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-10-18T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/2e4ba16a520677f3535e9fc9199f6899f8eb7891",
+    "parents": [
+      {
+        "sha": "eb9af27327f78035f56bafcdee966ea69a8f1f51"
+      }
+    ],
+    "sha": "2e4ba16a520677f3535e9fc9199f6899f8eb7891",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/2e4ba16a520677f3535e9fc9199f6899f8eb7891"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-10-15T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "committer": {
+        "date": "2026-10-15T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "message": "Add tests for the edge cases\n",
+      "tree": {
+        "sha": "7db617f72be1fa46de3a9be1f8bdd02bc8029fb4"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "created": "2026-10-15T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/eb9af27327f78035f56bafcdee966ea69a8f1f51",
+    "parents": [
+      {
+        "sha": "7035db3886ff8d204a81905480bf8e672ea933ee"
+      }
+    ],
+    "sha": "eb9af27327f78035f56bafcdee966ea69a8f1f51",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/eb9af27327f78035f56bafcdee966ea69a8f1f51"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-10-12T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-10-12T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Tidy the README\n",
+      "tree": {
+        "sha": "1a83083d45a707a59945b42e1e867d58c44003fe"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-10-12T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/7035db3886ff8d204a81905480bf8e672ea933ee",
+    "parents": [
+      {
+        "sha": "291aa42b96d86b7002cb0b537d5ab8ecdee78f45"
+      }
+    ],
+    "sha": "7035db3886ff8d204a81905480bf8e672ea933ee",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/7035db3886ff8d204a81905480bf8e672ea933ee"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-10-09T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-10-09T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Refactor the config loader\n",
+      "tree": {
+        "sha": "4b1ee8a23ec0ac4f676eb86b788f3a640cc2edf9"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-10-09T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/291aa42b96d86b7002cb0b537d5ab8ecdee78f45",
+    "parents": [
+      {
+        "sha": "1646f73fb64cd8db0b1cfa358dc6a74c910dfd3d"
+      }
+    ],
+    "sha": "291aa42b96d86b7002cb0b537d5ab8ecdee78f45",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/291aa42b96d86b7002cb0b537d5ab8ecdee78f45"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-10-06T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "committer": {
+        "date": "2026-10-06T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "message": "Log slow requests\n",
+      "tree": {
+        "sha": "a23bbee5e3c3a95c047a35a5ae1fc89890671090"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "created": "2026-10-06T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/1646f73fb64cd8db0b1cfa358dc6a74c910dfd3d",
+    "parents": [
+      {
+        "sha": "a65ac1a69e4b7cbc9ba4f7f6048bde6124750355"
+      }
+    ],
+    "sha": "1646f73fb64cd8db0b1cfa358dc6a74c910dfd3d",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/1646f73fb64cd8db0b1cfa358dc6a74c910dfd3d"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-10-03T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-10-03T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Fix a typo in the docs\n",
+      "tree": {
+        "sha": "f1fa1271070bc7efe59c7ca5099c37de393f77df"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-10-03T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/a65ac1a69e4b7cbc9ba4f7f6048bde6124750355",
+    "parents": [
+      {
+        "sha": "1a8442fd84ec3099727b73b0c1aff815af8e409b"
+      }
+    ],
+    "sha": "a65ac1a69e4b7cbc9ba4f7f6048bde6124750355",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/a65ac1a69e4b7cbc9ba4f7f6048bde6124750355"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-09-30T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-09-30T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Speed up the start-up\n",
+      "tree": {
+        "sha": "987d5fce4bc5a3bf7bdc8f87794a0a1d50dc1f59"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-09-30T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/1a8442fd84ec3099727b73b0c1aff815af8e409b",
+    "parents": [
+      {
+        "sha": "a86d49944dbb6558db08615393896d9d87c3bdfa"
+      }
+    ],
+    "sha": "1a8442fd84ec3099727b73b0c1aff815af8e409b",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/1a8442fd84ec3099727b73b0c1aff815af8e409b"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-09-27T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "committer": {
+        "date": "2026-09-27T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "message": "Release v2.3.0\n",
+      "tree": {
+        "sha": "7ab7f8bb6018035d98bac24e0e8d1a01fa968e4d"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "created": "2026-09-27T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/a86d49944dbb6558db08615393896d9d87c3bdfa",
+    "parents": [
+      {
+        "sha": "56907609dbc753f86c6b3c336e1b6842c6bf4c0a"
+      }
+    ],
+    "sha": "a86d49944dbb6558db08615393896d9d87c3bdfa",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/a86d49944dbb6558db08615393896d9d87c3bdfa"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-09-24T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-09-24T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Update dependencies\n",
+      "tree": {
+        "sha": "b72f5c0750fb1810c1e7c38e73b4d0b634e0c28f"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-09-24T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/56907609dbc753f86c6b3c336e1b6842c6bf4c0a",
+    "parents": [
+      {
+        "sha": "e27ad3a7104339d9022b06d0033762159271a672"
+      }
+    ],
+    "sha": "56907609dbc753f86c6b3c336e1b6842c6bf4c0a",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/56907609dbc753f86c6b3c336e1b6842c6bf4c0a"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-09-21T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-09-21T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Add tests for the edge cases\n",
+      "tree": {
+        "sha": "f3d1adab3515d0a6f27ef7139de1cd05ab90b49b"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-09-21T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/e27ad3a7104339d9022b06d0033762159271a672",
+    "parents": [
+      {
+        "sha": "e860531f41dee37b97772a339c70db05ac6594e6"
+      }
+    ],
+    "sha": "e27ad3a7104339d9022b06d0033762159271a672",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/e27ad3a7104339d9022b06d0033762159271a672"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-09-18T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "committer": {
+        "date": "2026-09-18T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "message": "Tidy the README\n",
+      "tree": {
+        "sha": "5f6b0efdd4c2872d0e22ca51c27c47b6aa0ccae8"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "created": "2026-09-18T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/e860531f41dee37b97772a339c70db05ac6594e6",
+    "parents": [
+      {
+        "sha": "20f6d69334c12a93edbdbffc0c79328d2c916c2b"
+      }
+    ],
+    "sha": "e860531f41dee37b97772a339c70db05ac6594e6",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/e860531f41dee37b97772a339c70db05ac6594e6"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-09-15T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-09-15T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Refactor the config loader\n",
+      "tree": {
+        "sha": "37e547c24c9237257f57f0afc9def81ea27b8cc7"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-09-15T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/20f6d69334c12a93edbdbffc0c79328d2c916c2b",
+    "parents": [
+      {
+        "sha": "8e0c5ed3882fac5a9fe2b84fcc698d43dfa0fbfa"
+      }
+    ],
+    "sha": "20f6d69334c12a93edbdbffc0c79328d2c916c2b",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/20f6d69334c12a93edbdbffc0c79328d2c916c2b"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-09-12T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-09-12T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Log slow requests\n",
+      "tree": {
+        "sha": "ee8bbe6890552e963b45a72b1cd0043ec64651c9"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-09-12T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/8e0c5ed3882fac5a9fe2b84fcc698d43dfa0fbfa",
+    "parents": [
+      {
+        "sha": "549f0d8f1d9f2db99c0cc6bb1af9413420c23451"
+      }
+    ],
+    "sha": "8e0c5ed3882fac5a9fe2b84fcc698d43dfa0fbfa",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/8e0c5ed3882fac5a9fe2b84fcc698d43dfa0fbfa"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-09-09T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "committer": {
+        "date": "2026-09-09T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "message": "Fix a typo in the docs\n",
+      "tree": {
+        "sha": "226346e11760586c004262a77079c3723c280d46"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "created": "2026-09-09T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/549f0d8f1d9f2db99c0cc6bb1af9413420c23451",
+    "parents": [
+      {
+        "sha": "c6011578c835210eedf83151e2e9779a2477eb2d"
+      }
+    ],
+    "sha": "549f0d8f1d9f2db99c0cc6bb1af9413420c23451",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/549f0d8f1d9f2db99c0cc6bb1af9413420c23451"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-09-06T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-09-06T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Speed up the start-up\n",
+      "tree": {
+        "sha": "c12f933a8de583eb95416318e91190a1d23c1550"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-09-06T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/c6011578c835210eedf83151e2e9779a2477eb2d",
+    "parents": [
+      {
+        "sha": "5abd7df25d5dc7e6609a624a14d6abce917f781f"
+      }
+    ],
+    "sha": "c6011578c835210eedf83151e2e9779a2477eb2d",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/c6011578c835210eedf83151e2e9779a2477eb2d"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-09-03T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-09-03T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Handle an empty response\n",
+      "tree": {
+        "sha": "3d5782ca428dcea45d6161ec2f35dfbd4f99d87f"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-09-03T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/5abd7df25d5dc7e6609a624a14d6abce917f781f",
+    "parents": [
+      {
+        "sha": "26f95ead2b446b9c99aaa80ef05b2b71bbd471a5"
+      }
+    ],
+    "sha": "5abd7df25d5dc7e6609a624a14d6abce917f781f",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/5abd7df25d5dc7e6609a624a14d6abce917f781f"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-08-31T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "committer": {
+        "date": "2026-08-31T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "message": "Update dependencies\n",
+      "tree": {
+        "sha": "adb2f13c23d569690f79630111f8b87eae9f3ad7"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "created": "2026-08-31T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/26f95ead2b446b9c99aaa80ef05b2b71bbd471a5",
+    "parents": [
+      {
+        "sha": "4cb0caf5ea105640922e3c4bc092f00b8c5a6b11"
+      }
+    ],
+    "sha": "26f95ead2b446b9c99aaa80ef05b2b71bbd471a5",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/26f95ead2b446b9c99aaa80ef05b2b71bbd471a5"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-08-28T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-08-28T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Add tests for the edge cases\n",
+      "tree": {
+        "sha": "d056f2205fb0017663de65dc3ddb8fa285ea0ad3"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-08-28T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/4cb0caf5ea105640922e3c4bc092f00b8c5a6b11",
+    "parents": [
+      {
+        "sha": "2c9d2a6ec789377153350fc96b9062dba46fd1ac"
+      }
+    ],
+    "sha": "4cb0caf5ea105640922e3c4bc092f00b8c5a6b11",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/4cb0caf5ea105640922e3c4bc092f00b8c5a6b11"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-08-25T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-08-25T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Tidy the README\n",
+      "tree": {
+        "sha": "7e71562805821a50346f4db8e8c0b57df91314e1"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-08-25T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/2c9d2a6ec789377153350fc96b9062dba46fd1ac",
+    "parents": [
+      {
+        "sha": "e9e5408386f207b067f9efbc11efad1e1ff9db1b"
+      }
+    ],
+    "sha": "2c9d2a6ec789377153350fc96b9062dba46fd1ac",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/2c9d2a6ec789377153350fc96b9062dba46fd1ac"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-08-22T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "committer": {
+        "date": "2026-08-22T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "message": "Release v2.2.0\n",
+      "tree": {
+        "sha": "fcd7d1760b23bcf2425bdfc9a2161e619cb041d7"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "created": "2026-08-22T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/e9e5408386f207b067f9efbc11efad1e1ff9db1b",
+    "parents": [
+      {
+        "sha": "408c7a7e2b42b6ba2c21b8c58ec9e8e30648d02a"
+      }
+    ],
+    "sha": "e9e5408386f207b067f9efbc11efad1e1ff9db1b",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/e9e5408386f207b067f9efbc11efad1e1ff9db1b"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-08-19T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-08-19T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Log slow requests\n",
+      "tree": {
+        "sha": "4b9b38587a0d07f4286ba768fa35d3569a1b16e4"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-08-19T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/408c7a7e2b42b6ba2c21b8c58ec9e8e30648d02a",
+    "parents": [
+      {
+        "sha": "0139de7f69e22b3f016cec1570e0ac2f47881e69"
+      }
+    ],
+    "sha": "408c7a7e2b42b6ba2c21b8c58ec9e8e30648d02a",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/408c7a7e2b42b6ba2c21b8c58ec9e8e30648d02a"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-08-16T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-08-16T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Fix a typo in the docs\n",
+      "tree": {
+        "sha": "abd167836f48ff58d8dfec250cae2e84dacba9c7"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-08-16T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/0139de7f69e22b3f016cec1570e0ac2f47881e69",
+    "parents": [
+      {
+        "sha": "c0cfe980c1b7a4ed065205f17dec3f3699e691af"
+      }
+    ],
+    "sha": "0139de7f69e22b3f016cec1570e0ac2f47881e69",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/0139de7f69e22b3f016cec1570e0ac2f47881e69"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-08-13T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "committer": {
+        "date": "2026-08-13T23:00:00+01:00",
+        "email": "priya@example.com",
+        "name": "Priya"
+      },
+      "message": "Speed up the start-up\n",
+      "tree": {
+        "sha": "2d1665b72e0801e37b91ccbadd9870b0ca3a1d50"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/priya",
+      "email": "priya@example.com",
+      "full_name": "Priya",
+      "id": 5,
+      "login": "priya",
+      "username": "priya"
+    },
+    "created": "2026-08-13T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/c0cfe980c1b7a4ed065205f17dec3f3699e691af",
+    "parents": [
+      {
+        "sha": "bb71d9911deb1b6e558ad822906304883dab9a86"
+      }
+    ],
+    "sha": "c0cfe980c1b7a4ed065205f17dec3f3699e691af",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/c0cfe980c1b7a4ed065205f17dec3f3699e691af"
+  },
+  {
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "commit": {
+      "author": {
+        "date": "2026-08-10T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "committer": {
+        "date": "2026-08-10T23:00:00+01:00",
+        "email": "mark@example.com",
+        "name": "Mark"
+      },
+      "message": "Handle an empty response\n",
+      "tree": {
+        "sha": "708fec398781f76a8b85988469f46909bc9e36a4"
+      },
+      "verification": null
+    },
+    "committer": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "created": "2026-08-10T23:00:00+01:00",
+    "files": null,
+    "html_url": "https://git.example.com/acme/beacon/commit/bb71d9911deb1b6e558ad822906304883dab9a86",
+    "parents": [
+      {
+        "sha": "c60cf6f199e9fc5c86e55ea916be90ff87012ebc"
+      }
+    ],
+    "sha": "bb71d9911deb1b6e558ad822906304883dab9a86",
+    "stats": null,
+    "url": "https://git.example.com/api/v1/repos/acme/beacon/git/commits/bb71d9911deb1b6e558ad822906304883dab9a86"
+  }
+]
+

@@ -1,0 +1,66 @@
+[
+  {
+    "assets": [],
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "body": "",
+    "created_at": "2026-10-29T23:00:00+01:00",
+    "draft": false,
+    "html_url": "https://git.example.com/acme/beacon/releases/tag/v2.4.0",
+    "id": 10100,
+    "name": "v2.4.0: checks by region",
+    "prerelease": false,
+    "published_at": "2026-10-29T23:00:00+01:00",
+    "tag_name": "v2.4.0",
+    "target_commitish": "main"
+  },
+  {
+    "assets": [],
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "body": "",
+    "created_at": "2026-10-19T23:00:00+01:00",
+    "draft": false,
+    "html_url": "https://git.example.com/acme/beacon/releases/tag/v2.3.1",
+    "id": 10101,
+    "name": "v2.3.1",
+    "prerelease": false,
+    "published_at": "2026-10-19T23:00:00+01:00",
+    "tag_name": "v2.3.1",
+    "target_commitish": "main"
+  },
+  {
+    "assets": [],
+    "author": {
+      "avatar_url": "https://git.example.com/avatars/mark",
+      "email": "mark@example.com",
+      "full_name": "Mark",
+      "id": 4,
+      "login": "mark",
+      "username": "mark"
+    },
+    "body": "",
+    "created_at": "2026-09-27T23:00:00+01:00",
+    "draft": false,
+    "html_url": "https://git.example.com/acme/beacon/releases/tag/v2.3.0",
+    "id": 10102,
+    "name": "v2.3.0",
+    "prerelease": false,
+    "published_at": "2026-09-27T23:00:00+01:00",
+    "tag_name": "v2.3.0",
+    "target_commitish": "main"
+  }
+]
+

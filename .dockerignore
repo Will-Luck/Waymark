@@ -1,0 +1,13 @@
+.git
+.gitignore
+.dockerignore
+.gitea
+.github
+.playwright-mcp
+/waymark
+dist
+testdata
+docs
+scripts
+*.md
+!CHANGELOG.md

@@ -1,0 +1,27 @@
+{
+  "total_count": 1,
+  "incomplete_results": false,
+  "items": [
+    {
+      "url": "https://api.github.com/repos/acme/app/issues/21",
+      "repository_url": "https://api.github.com/repos/acme/app",
+      "html_url": "https://github.com/acme/app/issues/21",
+      "id": 3000021,
+      "number": 21,
+      "title": "Export the parcel list as CSV",
+      "user": {"login": "acme", "id": 1001, "type": "User"},
+      "labels": [],
+      "state": "open",
+      "locked": false,
+      "assignee": null,
+      "assignees": [],
+      "comments": 0,
+      "created_at": "2026-10-15T09:00:00Z",
+      "updated_at": "2026-10-15T09:00:00Z",
+      "closed_at": null,
+      "author_association": "OWNER",
+      "body": "From the ideas roundup.\nwaymark-idea:csv-export",
+      "score": 1.0
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "apps": [
+    {
+      "added": 1788300000000,
+      "lastUpdated": 1790632800000,
+      "license": "MIT",
+      "name": "Beacon",
+      "packageName": "com.example.beacon",
+      "suggestedVersionCode": "10600"
+    }
+  ],
+  "packages": {
+    "com.example.beacon": [
+      {
+        "added": 1788300000000,
+        "apkName": "com.example.beacon_10502.apk",
+        "packageName": "com.example.beacon",
+        "size": 4200000,
+        "versionCode": 10502,
+        "versionName": "1.5.2"
+      },
+      {
+        "added": 1790632800000,
+        "apkName": "com.example.beacon_10600.apk",
+        "packageName": "com.example.beacon",
+        "size": 4200000,
+        "versionCode": 10600,
+        "versionName": "1.6.0"
+      }
+    ]
+  },
+  "repo": {
+    "address": "https://git.example.com/fdroid/repo",
+    "name": "Acme F-Droid",
+    "timestamp": 1793484000000,
+    "version": 21
+  },
+  "requests": {
+    "install": [],
+    "uninstall": []
+  }
+}
+

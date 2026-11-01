@@ -1,0 +1,132 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+# The shipping Go is '1.27' below and GO_VERSION=1.27 in the Dockerfile: the
+# image and the binaries are built with the same Go. Move them together.
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # The Go build cross-compiles natively (FROM --platform=$BUILDPLATFORM);
+      # QEMU is only for the final stage's two RUN steps (apk add, adduser),
+      # which run in the target platform's Alpine.
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}
+            docker.io/willluck/waymark
+          # latest moves for a release only: a tag with a "-" (v0.3.0-rc.1)
+          # is a prerelease. No automatic latest besides this one.
+          flavor: latest=false
+          tags: |
+            type=semver,pattern={{version}}
+            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            VERSION=${{ github.ref_name }}
+          cache-from: type=gha,scope=release
+          cache-to: type=gha,scope=release,mode=max
+
+      - name: Sync README to Docker Hub
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: willluck/waymark
+          short-description: A live status page for every project on your Gitea, Forgejo and GitHub accounts
+          readme-filepath: ./README.md
+          enable-url-completion: true
+
+  binaries:
+    runs-on: ubuntu-latest
+    needs: publish
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # The shipping Go, as the image is built with (go.mod's go line is only
+      # the oldest Go that builds Waymark).
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.27'
+          check-latest: true
+
+      - name: Build binaries
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          for pair in linux/amd64 linux/arm64 linux/arm/v7 darwin/amd64 darwin/arm64; do
+            os="${pair%%/*}"
+            arch="${pair#*/}"
+            goarch="${arch%%/*}"
+            goarm=""
+            if [ "$arch" = arm/v7 ]; then
+              goarm=7
+            fi
+            GOOS="$os" GOARCH="$goarch" GOARM="$goarm" CGO_ENABLED=0 \
+              go build -trimpath -ldflags "-s -w -X main.version=${GITHUB_REF_NAME}" \
+                -o "dist/waymark-${os}-${arch//\//-}" ./cmd/waymark
+          done
+          (cd dist && sha256sum waymark-* > SHA256SUMS)
+          ls -la dist/
+
+      - name: Release notes from the tag annotation
+        run: |
+          set -euo pipefail
+          body=$(git for-each-ref --format='%(contents)' "refs/tags/${GITHUB_REF_NAME}")
+          if [ -z "$body" ]; then
+            body=$(git log -1 --pretty=%B "${GITHUB_REF_NAME}")
+          fi
+          printf '%s' "$body" > release-notes.md
+          echo "Wrote $(wc -c < release-notes.md) bytes to release-notes.md"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body_path: release-notes.md
+          # A tag with a "-" is a prerelease, and never the latest release.
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          make_latest: ${{ !contains(github.ref_name, '-') }}
+          files: dist/*

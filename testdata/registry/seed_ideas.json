@@ -1,0 +1,67 @@
+{
+  "roundup_date": "2026-10-30",
+  "ideas": [
+    {
+      "id": "beacon-01",
+      "project": "beacon",
+      "title": "Status badge for READMEs",
+      "pitch": "An SVG badge with the current status.",
+      "why": "Asked for twice this month.",
+      "size": "S",
+      "kind": "quick-win"
+    },
+    {
+      "id": "beacon-02",
+      "project": "beacon",
+      "title": "Maintenance windows",
+      "pitch": "Schedule quiet periods so planned work raises no alerts.",
+      "why": "Planned work pages people at night.",
+      "size": "M",
+      "kind": "hardening"
+    },
+    {
+      "id": "atlas-01",
+      "project": "atlas",
+      "title": "Offline tile packs",
+      "pitch": "Download a region's tiles for use without a network.",
+      "why": "Field work happens where there is no signal.",
+      "size": "L",
+      "kind": "bold"
+    },
+    {
+      "id": "ledger-01",
+      "project": "ledger",
+      "title": "A Beacon incident when payments fail",
+      "pitch": "Post an incident when card payments start failing.",
+      "why": "Failures are found by customers first.",
+      "size": "M",
+      "kind": "connective"
+    },
+    {
+      "id": "kite-01",
+      "project": "kite",
+      "title": "Kite commands for Beacon",
+      "pitch": "Open and close incidents from the terminal.",
+      "size": "S",
+      "kind": "connective"
+    },
+    {
+      "id": "harbour-01",
+      "project": "harbour",
+      "title": "Signed images",
+      "pitch": "Sign every image the registry serves.",
+      "why": "Supply-chain checks ask for it.",
+      "size": "L",
+      "kind": "hardening"
+    },
+    {
+      "id": "inkwell-01",
+      "project": "inkwell",
+      "title": "Read-only share links",
+      "pitch": "Share a pad without edit rights.",
+      "size": "S",
+      "kind": "quick-win"
+    }
+  ]
+}
+

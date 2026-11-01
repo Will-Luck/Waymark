@@ -1,0 +1,39 @@
+{{define "main"}}{{$v := .Data}}
+<div class="wrap" data-ideas>
+  <header class="page-head">
+    <h1 class="page-title">{{icon "lightbulb"}}Ideas <span class="count">{{num $v.Total}}</span></h1>
+    {{if $v.FromFile}}<p class="lead">Ideas from the roundup{{with $v.Roundup}} on <b>{{.}}</b>{{end}}{{if $v.FromLabels}} and from issues labelled {{with $v.Labels}}{{.}}{{else}}as ideas{{end}}{{end}}. File one as an issue to make it real.</p>
+    {{- else if $v.FromLabels}}<p class="lead">From issues labelled {{with $v.Labels}}{{.}}{{else}}as ideas{{end}}.</p>{{end}}
+    <ul class="kind-counts" aria-label="Ideas by kind">
+      {{range $v.Kinds}}<li class="k-{{.Key}}"><span class="kc-ic">{{icon .Icon}}</span><span class="kc-num">{{.Count}}</span><span class="kc-label">{{.Label}}</span></li>{{end}}
+      {{if $v.FromFile}}<li class="k-filed"><span class="kc-ic">{{icon "circle-check"}}</span><span class="kc-num">{{$v.Filed}}</span><span class="kc-label">Already filed</span></li>{{end}}
+    </ul>
+  </header>
+
+  <div class="idea-tools">
+    <fieldset class="filter">
+      <legend>Kind</legend>
+      <input type="radio" name="kind" id="k-all" value="" checked><label for="k-all">All <span class="n" data-n="all">{{$v.Total}}</span>{{range $v.Sizes}}<span class="n" data-n="s-{{.Key}}">{{.Count}}</span>{{end}}</label>
+      {{range $v.Kinds}}<input type="radio" name="kind" id="k-{{.Key}}" value="{{.Key}}"><label for="k-{{.Key}}" class="k-{{.Key}}">{{icon .Icon}}{{.Label}} <span class="n" data-n="all">{{.Count}}</span>{{range .By}}<span class="n" data-n="s-{{.Key}}">{{.Count}}</span>{{end}}</label>{{end}}
+    </fieldset>
+    <fieldset class="filter">
+      <legend>Size</legend>
+      <input type="radio" name="size" id="s-all" value="" checked><label for="s-all">Any size</label>
+      {{range $v.Sizes}}<input type="radio" name="size" id="s-{{.Key}}" value="{{.Key}}"><label for="s-{{.Key}}">{{.Label}} <span class="n" data-n="all">{{.Count}}</span>{{range .By}}<span class="n" data-n="k-{{.Key}}">{{.Count}}</span>{{end}}</label>{{end}}
+    </fieldset>
+    <div class="idea-js">
+      <label class="select" hidden data-js-show>{{icon "folder-git-2"}}<span class="sr">Project</span>
+        <select id="idea-project" aria-label="Show ideas for one project">
+          <option value="">All projects</option>
+          {{range $v.Projects}}<option value="{{.Key}}">{{.Label}} ({{.Count}})</option>{{end}}
+        </select>
+      </label>
+      <button type="button" class="btn accent" data-surprise hidden data-js-show>{{icon "shuffle"}}Surprise me</button>
+      <p class="idea-count small muted" data-idea-count aria-live="polite"></p>
+    </div>
+  </div>
+
+  <p class="ideas-empty" data-ideas-empty>{{icon "search-x"}}<span><b>No ideas match these filters.</b> <a href="/ideas">Show all ideas</a></span></p>
+  <div class="idea-grid">{{range $v.Ideas}}{{template "idea" (dict "It" . "Show" true)}}{{end}}</div>
+</div>
+{{end}}

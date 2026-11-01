@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+# The shipping Go is '1.27' below and GO_VERSION=1.27 in the Dockerfile: the
+# image, the release binaries and govulncheck all use it. Move them together.
+# The test job also runs go.mod's minimum, the oldest Go that must build.
+
+jobs:
+  go:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        go: [go.mod, '1.27']
+    name: go (${{ matrix.go }})
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go (go.mod minimum)
+        if: matrix.go == 'go.mod'
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          check-latest: true
+
+      - name: Set up Go (shipping)
+        if: matrix.go != 'go.mod'
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+          check-latest: true
+
+      - name: gofmt
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "gofmt needed:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: go vet
+        run: go vet ./...
+
+      - name: Tests
+        run: go test -race -count=1 ./...
+
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      # The shipping Go: its standard library is what the image runs.
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.27'
+          check-latest: true
+
+      - name: govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+
+  image:
+    needs: go
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      # The image builds with the Dockerfile's GO_VERSION (1.27); this step
+      # only pins the toolchain on the runner to the same Go.
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.27'
+          check-latest: true
+
+      - name: Build image
+        run: docker build --build-arg VERSION=ci -t waymark:ci .
+
+      - name: Demo smoke
+        run: bash scripts/demo-smoke.sh waymark:ci
