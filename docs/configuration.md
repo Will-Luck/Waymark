@@ -317,7 +317,10 @@ IPv6 or IPv4-mapped) is not requested, and shows as "Not probed". Homepage probe
 projects file's `urls:` probes are yours and are requested as given.
 
 A probe is one GET every 2 minutes with a 5-second limit. A 2xx or 3xx answer
-(redirects are not followed), 401 or 403 counts as up.
+(redirects are not followed), 401 or 403 counts as up. A probe counts as down
+after 2 failed checks in a row; one failed check shows as "Failed once,
+checking again" and raises nothing. Uptime and the 24-hour bar count every
+check.
 
 ### listen and data_dir
 
@@ -388,7 +391,7 @@ projects:
 | `projects[].fdroid.package` | string | The app's package id in that index. Its published version is the running version for the Deploy rule |
 | `projects[].urls[].label` | string | The link's name, such as `Live` |
 | `projects[].urls[].url` | string | The link |
-| `projects[].urls[].probe` | string | A URL to probe every 2 minutes. A down probe raises **Fix** and an up one makes the project Live. Leave it out for a link only |
+| `projects[].urls[].probe` | string | A URL to probe every 2 minutes. A probe down for 2 checks in a row raises **Fix** and an up one makes the project Live. Leave it out for a link only |
 | `projects[].notes` | list of strings | Note file names for this project (both notes types); a listed file that is missing is reported |
 | `projects[].relations[].to` | string | Another project's slug |
 | `projects[].relations[].kind` | string | `depends-on`, `client-of`, `fork-of`, `deploys`, `sibling`, `monitors`, `supersedes`, or any word (shown with dashes as spaces). Shown on both projects and drawn on the map |

@@ -208,6 +208,10 @@ type DeployInfo struct {
 	Latest    string    `json:"latest"`  // the primary repo's latest tag
 	Lagging   bool      `json:"lagging"`
 	CheckedAt time.Time `json:"checked_at"`
+	// Unconfirmed: the container is not running but has not been seen so for
+	// 2 minutes yet: the page says it is checking again, and nothing else
+	// follows from it (no Fix, tier change or event).
+	Unconfirmed bool `json:"unconfirmed,omitempty"`
 }
 
 type ProbeInfo struct {
@@ -226,6 +230,10 @@ type ProbeInfo struct {
 	// NotProbed says why the URL was not checked (a homepage at a local or
 	// private address); it is then neither up nor down.
 	NotProbed string `json:"not_probed,omitempty"`
+	// Unconfirmed: the last check failed but the outage is not confirmed
+	// yet (one failed check): the page says it is checking again, and
+	// nothing else follows from it (no Fix, tier change or event).
+	Unconfirmed bool `json:"unconfirmed,omitempty"`
 }
 
 type ProbePoint struct {

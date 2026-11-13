@@ -225,6 +225,9 @@ func find(s *model.Site, slug string) *model.Project {
 
 func TestRunOnceAgainstFixtures(t *testing.T) {
 	w := newWorld(t)
+	// Atlas has answered 503 for a while: the check before this run failed
+	// too, so its outage is confirmed (two failed checks in a row).
+	w.app.store.AddProbe(w.srv.URL+"/probe/atlas", model.ProbePoint{At: fixedNow.Add(-2 * time.Minute)}, fixedNow)
 	site, err := w.app.RunOnce(context.Background())
 	if err != nil {
 		t.Fatal(err)
@@ -324,7 +327,7 @@ func TestChangesBecomeEventsAndPublish(t *testing.T) {
 	}
 	ch, cancel := w.app.Subscribe()
 	defer cancel()
-	w.writeFeed(map[string]string{"beacon": "exited"}, "About a minute", 0)
+	w.writeFeed(map[string]string{"beacon": "exited"}, "3 minutes", 0)
 	w.app.collectDocker(context.Background())
 	w.app.assemble()
 
@@ -396,24 +399,27 @@ func drainUntilTick(t *testing.T, ch <-chan model.Change) []string {
 func TestOutageDoesNotRepublishEachPoll(t *testing.T) {
 	w := newWorld(t)
 	ctx := context.Background()
+	// Atlas's outage is confirmed before the first poll (its check before
+	// this run failed too), so the second probe pass changes nothing it shows.
+	w.app.store.AddProbe(w.srv.URL+"/probe/atlas", model.ProbePoint{At: fixedNow.Add(-2 * time.Minute)}, fixedNow)
 	if _, err := w.app.RunOnce(ctx); err != nil {
 		t.Fatal(err)
 	}
-	w.writeFeed(map[string]string{"beacon": "exited"}, "About a minute", 0)
-	// The feed mtime writeFeed sets, less docker's "About a minute".
-	stoppedAt := fixedNow.Add(-10*time.Second - time.Minute)
+	w.writeFeed(map[string]string{"beacon": "exited"}, "3 minutes", 0)
+	// The feed mtime writeFeed sets, less docker's "3 minutes".
+	stoppedAt := fixedNow.Add(-10*time.Second - 3*time.Minute)
 	w.app.collectDocker(ctx)
 	w.app.assemble()
 	ch, cancel := w.app.Subscribe()
 	defer cancel()
 
 	// Two minutes on: the feed is rewritten with the same states but
-	// docker's text has moved on (beacon "Exited (1) 3 minutes ago", and
+	// docker's text has moved on (beacon "Exited (1) 5 minutes ago", and
 	// the uptimes past an hour mark, harbour's "Up 19 hours" now "Up 20
 	// hours"), and the probes run again (atlas is still answering 503).
 	later := fixedNow.Add(2 * time.Minute)
 	w.app.now = func() time.Time { return later }
-	w.writeFeed(map[string]string{"beacon": "exited"}, "3 minutes", 1)
+	w.writeFeed(map[string]string{"beacon": "exited"}, "5 minutes", 1)
 	p := filepath.Join(w.feedDir, "docker.json")
 	if err := os.Chtimes(p, later.Add(-time.Second), later.Add(-time.Second)); err != nil {
 		t.Fatal(err)
@@ -426,7 +432,7 @@ func TestOutageDoesNotRepublishEachPoll(t *testing.T) {
 			t.Errorf("%s re-published, but nothing it shows has changed", c)
 		}
 	}
-	if st := find(w.app.Snapshot(), "beacon").Deploy.Status; st != "Exited (1) 3 minutes ago" {
+	if st := find(w.app.Snapshot(), "beacon").Deploy.Status; st != "Exited (1) 5 minutes ago" {
 		t.Errorf("the second feed was not read: beacon status %q", st)
 	}
 	if st := find(w.app.Snapshot(), "harbour").Deploy.Status; st != "Up 20 hours" {

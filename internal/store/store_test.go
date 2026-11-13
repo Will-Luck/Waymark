@@ -185,3 +185,139 @@ func TestOpenRejectsUnwritableDir(t *testing.T) {
 		t.Errorf("missing data dir should be created: %v", err)
 	}
 }
+
+// An assemble that changes nothing must leave the store clean, so the next
+// save tick writes nothing. Fingerprints read back from the file (a time
+// with a zone offset, an empty map that omitempty drops, CI keys, the
+// json:"-" commit times) compare equal to the same ones built in memory.
+func TestSetFingerprintsMarksOnlyAChange(t *testing.T) {
+	dir := t.TempDir()
+	s, err := Open(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	since := time.Date(2026, 10, 31, 23, 0, 0, 0, time.FixedZone("CET", 3600))
+	fps := func(state string, commit time.Time) map[string]derive.Fingerprint {
+		tag := "v1.25.0"
+		return map[string]derive.Fingerprint{"beacon": {
+			Name: "Beacon", LatestTag: &tag, ContainerName: "beacon", ContainerState: &state, ContainerSince: &since,
+			CI:      map[int64]derive.CIState{9: {Conclusion: "failure"}, 10: {Conclusion: "success"}},
+			Probes:  map[string]bool{},
+			Commits: []time.Time{commit},
+		}}
+	}
+	s.SetFingerprints(fps("running", now))
+	if !s.Dirty() {
+		t.Fatal("a first set of fingerprints must mark the store")
+	}
+	if err := s.Save(now); err != nil {
+		t.Fatal(err)
+	}
+	s.SetFingerprints(fps("running", now))
+	if s.Dirty() {
+		t.Error("the same fingerprints again marked the store dirty")
+	}
+	r, err := Open(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r.SetFingerprints(fps("running", now))
+	if r.Dirty() {
+		t.Error("fingerprints equal to the file's marked a reopened store dirty")
+	}
+	r.SetFingerprints(fps("running", now.Add(time.Hour)))
+	if r.Dirty() {
+		t.Error("a new commit time alone (json:\"-\", never written) marked the store dirty")
+	}
+	r.SetFingerprints(fps("exited", now))
+	if !r.Dirty() {
+		t.Error("a changed container state did not mark the store")
+	}
+}
+
+// A probe point alone does not make the store dirty: it waits for the
+// slower probe save (Due), so the 10-second tick does not write for it.
+func TestProbePointAloneIsNotDirty(t *testing.T) {
+	s, err := Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	s.AddProbe("http://x/", model.ProbePoint{At: now, Up: true, LatencyMS: 5}, now)
+	if s.Dirty() {
+		t.Error("a probe point alone marked the store dirty")
+	}
+}
+
+// Due is the save tick's rule: events and fingerprints at once, probe points
+// alone 10 minutes after the last write. Every write carries the probe
+// points; a probe point added while the file is written stays due; pruning
+// is a probe change.
+func TestDueWaitsTenMinutesForProbePointsAlone(t *testing.T) {
+	s, err := Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Save(now); err != nil {
+		t.Fatal(err)
+	}
+	every := 10 * time.Minute
+	s.AddProbe("http://x/", model.ProbePoint{At: now, Up: true}, now)
+	if !s.ProbesDirty() || s.Due(now.Add(every-time.Second), every) {
+		t.Error("probe points alone are due 10 minutes after the last write, not before")
+	}
+	if !s.Due(now.Add(every), every) {
+		t.Error("probe points alone are due 10 minutes after the last write")
+	}
+	s.AddEvents([]model.Event{ev("a", now)}, now)
+	if !s.Due(now.Add(time.Second), every) {
+		t.Error("an event is due at the next tick")
+	}
+	if err := s.Save(now.Add(time.Second)); err != nil {
+		t.Fatal(err)
+	}
+	if s.Dirty() || s.ProbesDirty() || s.Due(now.Add(2*time.Second), every) {
+		t.Error("a write carries the probe points: nothing is due after it")
+	}
+	s.beforeWrite = func() {
+		s.AddProbe("http://x/", model.ProbePoint{At: now.Add(time.Minute), Up: true}, now.Add(time.Minute))
+	}
+	s.AddEvents([]model.Event{ev("b", now)}, now)
+	if err := s.Save(now.Add(2 * time.Second)); err != nil {
+		t.Fatal(err)
+	}
+	s.beforeWrite = nil
+	if !s.ProbesDirty() {
+		t.Error("a probe point added during the write was marked saved")
+	}
+
+	p, err := Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	p.AddProbe("http://y/", model.ProbePoint{At: now, Up: true}, now)
+	if err := p.Save(now); err != nil {
+		t.Fatal(err)
+	}
+	p.PruneProbes(map[string]bool{})
+	if p.Dirty() || !p.ProbesDirty() {
+		t.Error("pruning probe history is a probe change, not an event or fingerprint change")
+	}
+}
+
+// The clock stepped back after a write (an NTP step at boot): the gap since
+// that write is negative, which says nothing about how long the probe
+// points have waited, so they are due rather than held for the step's size.
+func TestDueAfterTheClockStepsBack(t *testing.T) {
+	s, err := Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := s.Save(now); err != nil {
+		t.Fatal(err)
+	}
+	back := now.Add(-time.Hour)
+	s.AddProbe("http://x/", model.ProbePoint{At: back, Up: true}, back)
+	if !s.Due(back, 10*time.Minute) {
+		t.Error("probe points alone, the clock an hour behind the last write: not due, want due")
+	}
+}

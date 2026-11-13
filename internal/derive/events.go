@@ -37,6 +37,10 @@ type Fingerprint struct {
 	ContainerState *string `json:"container_state,omitempty"`
 	// ContainerSince is when ContainerState was first seen.
 	ContainerSince *time.Time `json:"container_since,omitempty"`
+	// ContainerDownSince is when the container was first seen not running,
+	// while that is not confirmed yet (ContainerConfirmAfter). Meanwhile
+	// ContainerState keeps the stored state, so nothing is emitted.
+	ContainerDownSince *time.Time `json:"container_down_since,omitempty"`
 
 	CI map[int64]CIState `json:"ci,omitempty"`
 
@@ -144,8 +148,10 @@ func Merge(prev, cur Fingerprint) Fingerprint {
 	if m.DeployVersion == nil {
 		m.DeployVersion, m.DeploySource = prev.DeployVersion, prev.DeploySource
 	}
-	if m.ContainerState == nil {
+	if m.ContainerState == nil && m.ContainerDownSince == nil {
+		// The feed did not see it: the stored state and any first sighting stay.
 		m.ContainerState, m.ContainerName, m.ContainerSince = prev.ContainerState, prev.ContainerName, prev.ContainerSince
+		m.ContainerDownSince = prev.ContainerDownSince
 	}
 	if m.LastCommitAt == nil {
 		m.LastCommitAt, m.LastCommitSHA, m.CommitsURL = prev.LastCommitAt, prev.LastCommitSHA, prev.CommitsURL
@@ -186,6 +192,29 @@ func Merge(prev, cur Fingerprint) Fingerprint {
 	return m
 }
 
+// KeepSighting is what is stored while nothing is diffed (the events grace):
+// prev as it is, but for when its container was first seen not running,
+// which follows cur. Without it each feed would date that sighting afresh,
+// and a stop would not be confirmed until the grace ends. Diff never reads
+// it, so no event moves.
+func KeepSighting(prev, cur Fingerprint) Fingerprint {
+	if cur.ContainerName == "" || cur.ContainerName != prev.ContainerName {
+		return prev
+	}
+	switch {
+	case cur.ContainerDownSince != nil: // not confirmed yet
+		prev.ContainerDownSince = cur.ContainerDownSince
+	case cur.ContainerState == nil: // the feed did not see it
+	case *cur.ContainerState == "running":
+		prev.ContainerDownSince = nil
+	default:
+		// Confirmed, while the stored state still says running: from when
+		// the outage began, so the next look stays confirmed.
+		prev.ContainerDownSince = cur.ContainerSince
+	}
+	return prev
+}
+
 // Diff turns two fingerprint snapshots into events. A project missing from
 // prev (first sighting, or an empty state.json) emits nothing. Event IDs are
 // deterministic so a replay never duplicates.
@@ -203,11 +232,15 @@ func Diff(prev, cur map[string]Fingerprint, now time.Time) []model.Event {
 		if !ok {
 			continue
 		}
-		add := func(kind, key string, level model.Level, text, href string) {
+		// addAt dates an event at at (when an outage began); add dates it now.
+		addAt := func(at time.Time, kind, key string, level model.Level, text, href string) {
 			evs = append(evs, model.Event{
-				ID: slug + ":" + kind + ":" + key, At: now.UTC(), Project: slug, ProjectName: c.Name, Icon: c.Icon,
+				ID: slug + ":" + kind + ":" + key, At: at.UTC(), Project: slug, ProjectName: c.Name, Icon: c.Icon,
 				Kind: kind, Level: level, Text: text, Href: href,
 			})
+		}
+		add := func(kind, key string, level model.Level, text, href string) {
+			addAt(now, kind, key, level, text, href)
 		}
 		if p.LatestTag != nil && c.LatestTag != nil && *c.LatestTag != "" && *p.LatestTag != *c.LatestTag {
 			add("release", *c.LatestTag, model.LevelGood, c.Name+" "+*c.LatestTag+" tagged", c.TagURL)
@@ -229,7 +262,9 @@ func Diff(prev, cur map[string]Fingerprint, now time.Time) []model.Event {
 				if *c.ContainerState == "missing" {
 					text = "Container " + c.ContainerName + " is missing"
 				}
-				add("container", *c.ContainerState+":"+minute, model.LevelAlert, text, "")
+				// Dated from the stop (ContainerSince); the ID keeps the
+				// minute it was confirmed.
+				addAt(outageAt(c.ContainerSince, now), "container", *c.ContainerState+":"+minute, model.LevelAlert, text, "")
 			}
 		}
 		if p.CI != nil && c.CI != nil {
@@ -307,7 +342,13 @@ func Diff(prev, cur map[string]Fingerprint, now time.Time) []model.Event {
 				if c.Probes[l] {
 					add("probe", l+":up:"+minute, model.LevelGood, l+" is back up", "")
 				} else {
-					add("probe", l+":down:"+minute, model.LevelAlert, l+" is down", "")
+					// Dated from the first failed check (ProbeDown); the ID
+					// keeps the minute it was confirmed.
+					var began *time.Time
+					if t, ok := c.ProbeDown[l]; ok {
+						began = &t
+					}
+					addAt(outageAt(began, now), "probe", l+":down:"+minute, model.LevelAlert, l+" is down", "")
 				}
 			}
 		}
@@ -330,6 +371,16 @@ func Diff(prev, cur map[string]Fingerprint, now time.Time) []model.Event {
 		}
 	}
 	return evs
+}
+
+// outageAt dates an outage's event: when it began (the first failed check,
+// or the stop) when the fingerprint knows and that is not after now, else
+// now.
+func outageAt(began *time.Time, now time.Time) time.Time {
+	if began == nil || began.IsZero() || began.After(now) {
+		return now
+	}
+	return *began
 }
 
 // noteWord is one note in the adapter's words: "Field notes" gives

@@ -3010,7 +3010,7 @@
           "source": "Probe",
           "heuristic": false,
           "level": "alert",
-          "at": "2026-10-31T22:00:00Z",
+          "at": "2026-10-31T16:00:00Z",
           "href": "https://maps.example.com"
         }
       ],
@@ -3193,7 +3193,7 @@
           "at": "2026-10-31T22:00:00Z"
         }
       ],
-      "hash": "9879693f1407b12b"
+      "hash": "6f08a6334197345f"
     },
     {
       "slug": "beacon-app",
@@ -5371,23 +5371,23 @@
           "project_name": "Broken thing",
           "icon": "container",
           "verb": "Fix",
-          "text": "Web UI is not answering (HTTP 502)",
-          "source": "Probe",
+          "text": "Container broken-thing is stopped (exit code 1)",
+          "source": "Docker",
           "heuristic": false,
           "level": "alert",
-          "at": "2026-10-31T22:00:00Z",
-          "href": "https://broken.example.com"
+          "at": "2026-10-31T19:59:30Z"
         },
         {
           "project": "broken-thing",
           "project_name": "Broken thing",
           "icon": "container",
           "verb": "Fix",
-          "text": "Container broken-thing is stopped (exit code 1)",
-          "source": "Docker",
+          "text": "Web UI is not answering (HTTP 502)",
+          "source": "Probe",
           "heuristic": false,
           "level": "alert",
-          "at": "2026-10-31T19:59:30Z"
+          "at": "2026-10-31T16:00:00Z",
+          "href": "https://broken.example.com"
         },
         {
           "project": "broken-thing",
@@ -5668,7 +5668,7 @@
           "at": "2026-10-31T22:00:00Z"
         }
       ],
-      "hash": "fc6620061b0fbeea"
+      "hash": "5771bf68506ca7e0"
     },
     {
       "slug": "inkwell",
@@ -6302,30 +6302,6 @@
   ],
   "needs_you": [
     {
-      "project": "atlas",
-      "project_name": "Atlas",
-      "icon": "map",
-      "verb": "Fix",
-      "text": "Live is not answering (HTTP 503)",
-      "source": "Probe",
-      "heuristic": false,
-      "level": "alert",
-      "at": "2026-10-31T22:00:00Z",
-      "href": "https://maps.example.com"
-    },
-    {
-      "project": "broken-thing",
-      "project_name": "Broken thing",
-      "icon": "container",
-      "verb": "Fix",
-      "text": "Web UI is not answering (HTTP 502)",
-      "source": "Probe",
-      "heuristic": false,
-      "level": "alert",
-      "at": "2026-10-31T22:00:00Z",
-      "href": "https://broken.example.com"
-    },
-    {
       "project": "broken-thing",
       "project_name": "Broken thing",
       "icon": "container",
@@ -6346,6 +6322,30 @@
       "heuristic": false,
       "level": "alert",
       "at": "2026-10-31T18:59:30Z"
+    },
+    {
+      "project": "atlas",
+      "project_name": "Atlas",
+      "icon": "map",
+      "verb": "Fix",
+      "text": "Live is not answering (HTTP 503)",
+      "source": "Probe",
+      "heuristic": false,
+      "level": "alert",
+      "at": "2026-10-31T16:00:00Z",
+      "href": "https://maps.example.com"
+    },
+    {
+      "project": "broken-thing",
+      "project_name": "Broken thing",
+      "icon": "container",
+      "verb": "Fix",
+      "text": "Web UI is not answering (HTTP 502)",
+      "source": "Probe",
+      "heuristic": false,
+      "level": "alert",
+      "at": "2026-10-31T16:00:00Z",
+      "href": "https://broken.example.com"
     },
     {
       "project": "ledger",

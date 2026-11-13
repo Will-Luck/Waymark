@@ -382,6 +382,11 @@ func (a *App) collectProbes(ctx context.Context) {
 	defer a.running.probes.Unlock()
 	a.mu.Lock()
 	targets := a.probeTargetsLocked()
+	// Until every forge has listed once since start, the targets leave out
+	// what only a list can show (repo projects without include_private,
+	// every homepage): their last results and 24 h history are kept, and
+	// pruning waits for the lists.
+	listed := a.listedLocked()
 	a.mu.Unlock()
 	sem := make(chan struct{}, ProbeWorkers)
 	var wg sync.WaitGroup
@@ -412,9 +417,11 @@ func (a *App) collectProbes(ctx context.Context) {
 		a.probes[tg.URL] = &r
 		keep[tg.URL] = true
 	}
-	for u := range a.probes {
-		if !keep[u] {
-			delete(a.probes, u)
+	if listed {
+		for u := range a.probes {
+			if !keep[u] {
+				delete(a.probes, u)
+			}
 		}
 	}
 	a.mu.Unlock()
@@ -424,7 +431,9 @@ func (a *App) collectProbes(ctx context.Context) {
 		}
 		a.store.AddProbe(r.URL, model.ProbePoint{At: r.At, Up: r.Up, LatencyMS: r.LatencyMS}, a.now())
 	}
-	a.store.PruneProbes(keep)
+	if listed {
+		a.store.PruneProbes(keep)
+	}
 	a.setStatus("probes", nil, a.now())
 	a.kickAssemble()
 }

@@ -215,23 +215,86 @@ async function catchUp() {
 let es = null;
 let missed = false;
 
+// A stream the browser gave up on (a proxy answering 502 while the app is
+// down closes an EventSource for good) is opened again after 5 s, doubling
+// to at most 60 s, each wait moved by up to a fifth either way so the open
+// tabs do not all come back at once. After 2 minutes down the header says
+// "Offline, retrying" and the sources list offers a reload.
+const RETRY_FIRST = 5000;
+const RETRY_MAX = 60000;
+const OFFLINE_AFTER = 2 * 60 * 1000;
+const srcPop = document.getElementById("src-pop");
+let retryWait = 0;
+let retryTimer = 0;
+let offlineTimer = 0;
+let offline = false;
+let reloadRow = null;
+
+function setOffline(on) {
+  offline = on;
+  if (on && !reloadRow && srcPop) {
+    reloadRow = el(
+      "p",
+      { class: "src-reload" },
+      icon("refresh-cw"),
+      el("span", null, el("b", null, "Offline"), ", retrying. ", el("a", { href: location.pathname + location.search }, "Reload")),
+    );
+    srcPop.append(reloadRow);
+  } else if (!on && reloadRow) {
+    reloadRow.remove();
+    reloadRow = null;
+  }
+}
+
+// The stream is down: say so, and start the 2-minute clock once.
+function lost() {
+  missed = true;
+  if (!offline && !offlineTimer) {
+    offlineTimer = setTimeout(() => {
+      offlineTimer = 0;
+      setOffline(true);
+      setStatus("reconnecting", "Offline, retrying");
+    }, OFFLINE_AFTER);
+  }
+  setStatus("reconnecting", offline ? "Offline, retrying" : "Reconnecting");
+}
+
+// The stream is up, or the page is leaving: forget the failure.
+function settle() {
+  clearTimeout(offlineTimer);
+  offlineTimer = 0;
+  clearTimeout(retryTimer);
+  retryTimer = 0;
+  retryWait = 0;
+  setOffline(false);
+}
+
 function connect() {
   if (!window.EventSource || es) return;
-  es = new EventSource("/events");
-  es.addEventListener("open", () => {
+  clearTimeout(retryTimer);
+  retryTimer = 0;
+  const source = new EventSource("/events");
+  es = source;
+  source.addEventListener("open", () => {
+    settle();
     setStatus(failing ? "warn" : "ok", failing ? failWord : "Live");
     if (missed) {
       missed = false;
       catchUp();
     }
   });
-  es.addEventListener("error", () => {
-    missed = true;
-    setStatus("reconnecting", "Reconnecting");
+  source.addEventListener("error", () => {
+    lost();
+    // CONNECTING: the browser is retrying by itself.
+    if (source.readyState !== EventSource.CLOSED) return;
+    source.close();
+    if (es === source) es = null;
+    retryWait = retryWait ? Math.min(retryWait * 2, RETRY_MAX) : RETRY_FIRST;
+    retryTimer = setTimeout(connect, Math.round(retryWait * (0.8 + Math.random() * 0.4)));
   });
-  es.addEventListener("project", (e) => { const d = parse(e); if (d) onProject(d); });
-  es.addEventListener("tick", (e) => { const d = parse(e); if (d) onTick(d); });
-  es.addEventListener("activity", (e) => {
+  source.addEventListener("project", (e) => { const d = parse(e); if (d) onProject(d); });
+  source.addEventListener("tick", (e) => { const d = parse(e); if (d) onTick(d); });
+  source.addEventListener("activity", (e) => {
     const ev = parse(e);
     if (!ev) return;
     toast({ text: ev.text, href: ev.href || (ev.project ? "/p/" + ev.project : null), icon: ev.icon, level: ev.level, project: ev.project_name, slug: ev.project, at: ev.at });
@@ -245,6 +308,7 @@ window.addEventListener("pagehide", () => {
   es?.close();
   es = null;
   missed = true;
+  settle();
 });
 window.addEventListener("pageshow", (e) => {
   if (!e.persisted) return;

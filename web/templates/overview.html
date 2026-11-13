@@ -21,17 +21,15 @@
   </section>
   {{end}}
 
-  {{if $v.Groups}}
+  {{if or $v.Groups $v.Rest}}
   <section class="block since" data-since aria-labelledby="since-h">
     <h2 id="since-h" class="sec-h">{{icon "history"}}Since you last looked</h2>
     <p class="since-sum" data-since-sum><b>{{plural $v.Recent "change" "changes"}}</b> in the last 7 days.</p>
-    <ol class="since-groups">
-      {{range $v.Groups}}<li class="since-group">
-        <a class="sg-proj" href="/p/{{.Slug}}"><span class="tile xs" data-cat="{{.Cat}}">{{icon .Icon}}</span><b>{{.Name}}</b></a>
-        <ul class="evs">{{range .Events}}<li class="ev lv-{{.Level}}" data-at="{{unixMilli .At}}"{{if .Old}} data-old{{end}}>{{icon (eventIcon .Kind)}}<span class="ev-text"><span class="sr">{{levelWord .Level}}: </span>{{.Text}}</span><span class="ev-when">{{ago .At}}</span></li>{{end}}</ul>
-      </li>{{end}}
-    </ol>
-    <button type="button" class="btn quiet" data-since-all hidden>{{icon "chevron-down"}}Show all changes</button>
+    <ol class="since-groups" data-since-main>{{range $v.Groups}}{{template "sinceGroup" .}}{{end}}</ol>
+    <details class="more since-rest" data-since-rest{{if not $v.RestN}} hidden{{end}}>
+      <summary>{{icon "chevron-down" "chev"}}<span data-since-rest-word>{{plural $v.RestN "more project" "more projects"}}</span></summary>
+      <ol class="since-groups" data-since-rest-list>{{range $v.Rest}}{{template "sinceGroup" .}}{{end}}</ol>
+    </details>
   </section>
   {{end}}
 
@@ -59,3 +57,14 @@
   </section>
 </div>
 {{end}}
+
+{{define "sinceGroup"}}<li class="since-group">
+  <a class="sg-proj" href="/p/{{.Slug}}"><span class="tile xs" data-cat="{{.Cat}}">{{icon .Icon}}</span><b>{{.Name}}</b></a>
+  <ul class="evs" data-since-top>{{range .Top}}{{template "sinceRow" .}}{{end}}</ul>
+  <details class="more since-more" data-since-more{{if not .More}} hidden{{end}}>
+    <summary>{{icon "chevron-down" "chev"}}<span data-since-more-word>{{.More}} more</span></summary>
+    <ul class="evs" data-since-extra>{{range .Extra}}{{template "sinceRow" .}}{{end}}</ul>
+  </details>
+</li>{{end}}
+
+{{define "sinceRow"}}<li class="ev lv-{{.Level}}" data-at="{{unixMilli .At}}"{{if .Ats}} data-ats="{{.Ats}}" data-ws="{{.Weights}}" data-single="{{.Single}}" data-fold="{{.Fold}}"{{with .Subj}} data-subj="{{.}}"{{end}}{{end}}{{if .Old}} data-old{{end}}>{{icon (eventIcon .Kind)}}<span class="ev-text"><span class="sr">{{levelWord .Level}}: </span><span data-ev-words>{{.Text}}</span></span><span class="ev-when">{{ago .At}}</span></li>{{end}}

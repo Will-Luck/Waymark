@@ -221,6 +221,7 @@ type synth struct {
 	dockerKnown  bool
 	probeUp      *bool
 	probeCode    int
+	probeFails   int // the failed checks in a row the last result ends, 2 minutes apart (0 or 1: just the last)
 	ciConclusion string
 	ciBranch     string
 	hold         *registry.Hold
@@ -229,6 +230,7 @@ type synth struct {
 	prDraft      bool
 	noteAge      time.Duration
 	fdroidVer    string
+	prev         *Fingerprint // the stored fingerprint (nil: none)
 }
 
 func (s synth) input() Input {
@@ -264,7 +266,7 @@ func (s synth) input() Input {
 		d.Repo = repo
 	}
 	p := registry.Project{Slug: "app", Name: "App", Category: "media", Icon: "tv", Repos: []registry.RepoRef{{Forge: "gitea", FullName: "acme/app"}}, Hold: s.hold, Retired: s.retired}
-	in := Input{Project: p, Repos: []RepoData{{Repo: repo, Detail: d}}, GiteaKnown: true, DockerKnown: s.dockerKnown, FeedAt: testNow}
+	in := Input{Project: p, Repos: []RepoData{{Repo: repo, Detail: d}}, GiteaKnown: true, DockerKnown: s.dockerKnown, FeedAt: testNow, Prev: s.prev}
 	if s.container != "" || s.declared {
 		ref := ContainerRef{Name: "app", Declared: s.declared}
 		if s.container != "" {
@@ -277,7 +279,12 @@ func (s synth) input() Input {
 		in.Containers = []ContainerRef{ref}
 	}
 	if s.probeUp != nil {
-		in.Probes = []ProbeData{{Label: "Live", URL: "https://app.example", ProbeURL: "http://10.0.0.1/", Last: &probe.Result{Up: *s.probeUp, Code: s.probeCode, LatencyMS: 12, At: testNow}}}
+		pd := ProbeData{Label: "Live", URL: "https://app.example", ProbeURL: "http://10.0.0.1/", Last: &probe.Result{Up: *s.probeUp, Code: s.probeCode, LatencyMS: 12, At: testNow}}
+		// The failed checks before the last, as the store's history holds them.
+		for i := s.probeFails - 1; i >= 1; i-- {
+			pd.History = append(pd.History, model.ProbePoint{At: testNow.Add(-time.Duration(i) * 2 * time.Minute)})
+		}
+		in.Probes = []ProbeData{pd}
 	}
 	if s.noteAge > 0 {
 		in.Notes = []notes.Note{{Project: "app", File: "app.md", Name: "app", IndexLine: "**v1 live**; rename awaits Mark", Clauses: []string{"rename awaits Mark"}, Modified: testNow.Add(-s.noteAge)}}
@@ -292,6 +299,24 @@ func (s synth) input() Input {
 
 func ptr[T any](v T) *T { return &v }
 
+// shiftProbes moves a synth input's probe checks to end at at: the last
+// result and the failed checks before it keep their spacing.
+func shiftProbes(in *Input, at time.Time) {
+	for i := range in.Probes {
+		d := at.Sub(in.Probes[i].Last.At)
+		in.Probes[i].Last.At = at
+		for j := range in.Probes[i].History {
+			in.Probes[i].History[j].At = in.Probes[i].History[j].At.Add(d)
+		}
+	}
+}
+
+// seenDown is a stored fingerprint that first saw the synth container
+// ("app") not running at at, not confirmed yet.
+func seenDown(at time.Time) *Fingerprint {
+	return &Fingerprint{ContainerName: "app", ContainerDownSince: &at}
+}
+
 func TestHeadlinePrecedence(t *testing.T) {
 	day := 24 * time.Hour
 	parked := &registry.Hold{Kind: "parked", Since: time.Date(2026, 9, 7, 0, 0, 0, 0, time.UTC), Reason: "Waiting on a decision"}
@@ -305,12 +330,16 @@ func TestHeadlinePrecedence(t *testing.T) {
 	}{
 		{"stopped container", synth{lastCommit: 2 * day, commits: 1, container: "app:1.0.0", state: "exited", declared: true, dockerKnown: true, probeUp: ptr(false), probeCode: 502},
 			"Container app is stopped (exit code 1)", model.LevelAlert, "Fix"},
-		{"missing container", synth{lastCommit: 2 * day, commits: 1, declared: true, dockerKnown: true},
+		{"missing container", synth{lastCommit: 2 * day, commits: 1, declared: true, dockerKnown: true, prev: seenDown(testNow.Add(-3 * time.Minute))},
 			"Container app is missing on web-01", model.LevelAlert, "Fix"},
+		{"container stopped a minute: checking again", synth{lastCommit: 2 * day, commits: 1, container: "app:1.0.0", state: "exited", status: "Exited (1) About a minute ago", declared: true, dockerKnown: true},
+			"Container app is stopped (exit code 1), checking again", model.LevelWarn, ""},
 		{"feed unknown: no container claim", synth{lastCommit: 2 * day, commits: 1, declared: true, dockerKnown: false},
 			"Last commit 2 days ago", model.LevelGood, ""},
-		{"probe down", synth{lastCommit: 2 * day, commits: 1, container: "app:1.0.0", state: "running", declared: true, dockerKnown: true, probeUp: ptr(false), probeCode: 502},
+		{"probe down", synth{lastCommit: 2 * day, commits: 1, container: "app:1.0.0", state: "running", declared: true, dockerKnown: true, probeUp: ptr(false), probeCode: 502, probeFails: 2},
 			"Live is not answering (HTTP 502)", model.LevelAlert, "Fix"},
+		{"one failed check: checking again", synth{lastCommit: 2 * day, commits: 1, container: "app:1.0.0", state: "running", declared: true, dockerKnown: true, probeUp: ptr(false), probeCode: 502},
+			"Live: failed once, checking again", model.LevelWarn, ""},
 		{"ci failing on main", synth{lastCommit: 2 * day, commits: 1, ciConclusion: "failure"},
 			"CI is failing on main: Fix the thing", model.LevelAlert, ""},
 		{"ci failing elsewhere is not an alert", synth{lastCommit: 2 * day, commits: 1, ciConclusion: "failure", ciBranch: "feat/x"},
@@ -587,9 +616,9 @@ func TestHashStableAcrossPollsWhileDown(t *testing.T) {
 	first := testNow.Add(-10 * time.Minute)
 	// Docker's status ages with the clock, as the real feed's does.
 	poll := func(at time.Time, state, status string, prev *Fingerprint) Built {
-		in := synth{lastCommit: 2 * day, commits: 1, container: "app:1.0.0", state: state, status: status, declared: true, dockerKnown: true, probeUp: ptr(false), probeCode: 502}.input()
+		in := synth{lastCommit: 2 * day, commits: 1, container: "app:1.0.0", state: state, status: status, declared: true, dockerKnown: true, probeUp: ptr(false), probeCode: 502, probeFails: 2}.input()
 		in.FeedAt = at
-		in.Probes[0].Last.At = at
+		shiftProbes(&in, at)
 		in.Prev = prev
 		e := env(t)
 		e.Now = at
@@ -604,29 +633,32 @@ func TestHashStableAcrossPollsWhileDown(t *testing.T) {
 		}
 		return out
 	}
-	// The container stopped a minute before the first poll saw it.
-	stopped := first.Add(-time.Minute)
-	b1 := poll(first, "exited", "Exited (1) About a minute ago", nil)
-	if got := fixAt(b1); len(got) != 2 || !got["Docker"].Equal(stopped) || !got["Probe"].Equal(first) {
+	// The container stopped three minutes before the first poll saw it
+	// (docker's own age confirms it at once); the probe's run of failed
+	// checks began two minutes before it.
+	stopped := first.Add(-3 * time.Minute)
+	failed := first.Add(-2 * time.Minute)
+	b1 := poll(first, "exited", "Exited (1) 3 minutes ago", nil)
+	if got := fixAt(b1); len(got) != 2 || !got["Docker"].Equal(stopped) || !got["Probe"].Equal(failed) {
 		t.Fatalf("first poll Fix actions = %v", got)
 	}
 	m1 := Merge(Fingerprint{}, b1.FP)
-	b2 := poll(testNow, "exited", "Exited (1) 11 minutes ago", &m1)
+	b2 := poll(testNow, "exited", "Exited (1) 13 minutes ago", &m1)
 	if b2.Project.Hash != b1.Project.Hash {
 		t.Errorf("hash moved between polls of the same outage: %s -> %s\n%+v\n%+v", b1.Project.Hash, b2.Project.Hash, b1.Project.Actions, b2.Project.Actions)
 	}
-	if got := fixAt(b2); !got["Docker"].Equal(stopped) || !got["Probe"].Equal(first) {
-		t.Errorf("second poll Fix actions = %v, want %v and %v", got, stopped, first)
+	if got := fixAt(b2); !got["Docker"].Equal(stopped) || !got["Probe"].Equal(failed) {
+		t.Errorf("second poll Fix actions = %v, want %v and %v", got, stopped, failed)
 	}
 	// The dates survive the round trip through state.json.
 	var back Fingerprint
 	raw, _ := json.Marshal(Merge(m1, b2.FP))
-	if err := json.Unmarshal(raw, &back); err != nil || back.ContainerSince == nil || !back.ContainerSince.Equal(stopped) || !back.ProbeDown["Live"].Equal(first) {
+	if err := json.Unmarshal(raw, &back); err != nil || back.ContainerSince == nil || !back.ContainerSince.Equal(stopped) || !back.ProbeDown["Live"].Equal(failed) {
 		t.Errorf("persisted since = %+v %v (%v)", back.ContainerSince, back.ProbeDown, err)
 	}
 	// A new state starts a new date, from docker's own age when it gives one.
 	b3 := poll(testNow, "restarting", "Restarting (1) 5 seconds ago", &back)
-	if got := fixAt(b3); !got["Docker"].Equal(testNow.Add(-5*time.Second)) || !got["Probe"].Equal(first) {
+	if got := fixAt(b3); !got["Docker"].Equal(testNow.Add(-5*time.Second)) || !got["Probe"].Equal(failed) {
 		t.Errorf("after a state change: %v", got)
 	}
 	// A container that was already down when Waymark first looked is dated
@@ -635,10 +667,12 @@ func TestHashStableAcrossPollsWhileDown(t *testing.T) {
 	if got := fixAt(b4); !got["Docker"].Equal(testNow.Add(-6 * day)) {
 		t.Errorf("down before the first look: %v", got)
 	}
-	// Missing has no docker status: the first look dates it.
-	in := synth{lastCommit: 2 * day, commits: 1, declared: true, dockerKnown: true}.input()
-	if got := fixAt(BuildProject(env(t), in)); !got["Docker"].Equal(in.FeedAt) {
-		t.Errorf("missing: %v", got)
+	// Missing has no docker status: the first look dates it, kept in the
+	// fingerprint until the outage is confirmed 2 minutes on.
+	look := testNow.Add(-3 * time.Minute)
+	in := synth{lastCommit: 2 * day, commits: 1, declared: true, dockerKnown: true, prev: seenDown(look)}.input()
+	if got := fixAt(BuildProject(env(t), in)); !got["Docker"].Equal(look) {
+		t.Errorf("missing: %v, want %v", got, look)
 	}
 }
 
@@ -664,9 +698,7 @@ func TestHashHoldsAsTheClockMoves(t *testing.T) {
 		for i := range in.Repos {
 			in.Repos[i].Detail.FetchedAt = at
 		}
-		for i := range in.Probes {
-			in.Probes[i].Last.At = at
-		}
+		shiftProbes(&in, at)
 		if in.FDroid != nil {
 			in.FDroidAt = at
 		}
@@ -685,16 +717,16 @@ func TestHashHoldsAsTheClockMoves(t *testing.T) {
 		mut              func(*Input)
 		same             bool
 	}{
-		{"stopped a minute, then fifty", stopped, "Exited (1) About a minute ago", "Exited (1) 51 minutes ago", t2, nil, true},
+		{"stopped three minutes, then fifty-three", stopped, "Exited (1) 3 minutes ago", "Exited (1) 53 minutes ago", t2, nil, true},
 		{"stopped for hours", stopped, "Exited (137) 20 hours ago", "Exited (137) 21 hours ago", t2, nil, true},
 		{"running, uptime ticks over an hour", running, "Up 21 hours (healthy)", "Up 22 hours (healthy)", t2, nil, true},
 		{"F-Droid repo container stopped", fdroidStopped, "Exited (2) 3 minutes ago", "Exited (2) 53 minutes ago", t2, nil, true},
 		{"commit minutes ago", synth{lastCommit: 55 * time.Minute, commits: 1}, "", "", t2, nil, true},
 		{"note written minutes ago", synth{lastCommit: 20*day + 2*time.Hour, commits: 1, noteAge: 55 * time.Minute}, "", "", t2, nil, true},
-		{"probe down", synth{lastCommit: 2*day + 2*time.Hour, commits: 1, probeUp: ptr(false), probeCode: 502}, "", "", t2, nil, true},
+		{"probe down", synth{lastCommit: 2*day + 2*time.Hour, commits: 1, probeUp: ptr(false), probeCode: 502, probeFails: 2}, "", "", t2, nil, true},
 		{"lagging behind an undated tag", synth{lastCommit: 2*day + 2*time.Hour, commits: 1, tag: "v1.1.0", container: "app:1.0.0", state: "running", declared: true, dockerKnown: true}, "Up 3 days", "Up 3 days", t2, undatedTag, true},
 		// What the page says did change: these must move the hash.
-		{"exit code changed", stopped, "Exited (1) About a minute ago", "Exited (137) 51 minutes ago", t2, nil, false},
+		{"exit code changed", stopped, "Exited (1) 3 minutes ago", "Exited (137) 53 minutes ago", t2, nil, false},
 		{"health changed", running, "Up 21 hours (healthy)", "Up 22 hours (unhealthy)", t2, nil, false},
 		{"a new day in the zone", synth{lastCommit: 55 * time.Minute, commits: 1}, "", "", t2.Add(3 * time.Hour), nil, false},
 	}
@@ -730,10 +762,11 @@ func TestClockFreeTexts(t *testing.T) {
 	if p.Deploy.Status != "Exited (137) 20 hours ago" {
 		t.Errorf("Deploy.Status keeps docker's text for the page: %q", p.Deploy.Status)
 	}
-	paused := synth{lastCommit: 2 * day, commits: 1, container: "app:1.0.0", state: "paused", status: "Up 3 days (Paused)", declared: true, dockerKnown: true}.input()
+	look := testNow.Add(-3 * time.Minute)
+	paused := synth{lastCommit: 2 * day, commits: 1, container: "app:1.0.0", state: "paused", status: "Up 3 days (Paused)", declared: true, dockerKnown: true, prev: seenDown(look)}.input()
 	p = BuildProject(env(t), paused).Project
-	if p.Headline != "Container app is paused" || !p.Actions[0].At.Equal(paused.FeedAt) {
-		t.Errorf("paused: %q, Fix at %v (docker's 3 days is uptime, not how long it has been paused)", p.Headline, p.Actions[0].At)
+	if p.Headline != "Container app is paused" || len(p.Actions) == 0 || !p.Actions[0].At.Equal(look) {
+		t.Errorf("paused: %q, actions %+v, want a Fix at %v (docker's 3 days is uptime, not how long it has been paused: the first look dates it)", p.Headline, p.Actions, look)
 	}
 	in := synth{lastCommit: 2 * day, commits: 1, tag: "v1.1.0", container: "app:1.0.0", state: "running", declared: true, dockerKnown: true}.input()
 	in.Repos[0].Detail.Tags[0].Commit.Created = forge.Time{}

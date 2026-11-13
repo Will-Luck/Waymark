@@ -256,12 +256,22 @@ func (a *App) assemble() {
 	// built yet and some are built from the wrong repo (a pair's mirror while
 	// its primary's forge has not answered), and the registry may still be
 	// the cached copy or none. For up to EventsGrace nothing is diffed and the
-	// stored state is kept as it is, so the first full list is compared with
-	// the last good one. After that a forge still unlisted is taken as down:
-	// events go on, and its projects not built yet keep their stored state
-	// (neither forgotten nor diffed).
+	// stored state is kept as it is (but for when a container was first seen
+	// not running, so a stop is confirmed 2 minutes after that, not after the
+	// grace), and the first full list is compared with the last good one.
+	// After that a forge still unlisted is taken as down: events go on, and
+	// its projects not built yet keep their stored state (neither forgotten
+	// nor diffed).
 	var evs []model.Event
-	if ready {
+	if !ready {
+		stored := a.store.Fingerprints()
+		for slug, fp := range out.Fingerprints {
+			if p, ok := stored[slug]; ok {
+				stored[slug] = derive.KeepSighting(p, fp)
+			}
+		}
+		a.store.SetFingerprints(stored)
+	} else {
 		prev := a.store.Fingerprints()
 		if !a.store.Empty() {
 			evs = derive.Diff(prev, out.Fingerprints, now)

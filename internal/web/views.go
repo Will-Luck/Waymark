@@ -119,16 +119,6 @@ type tierSection struct {
 	CatCounts []catChip
 }
 
-type eventItem struct {
-	model.Event
-	Old bool
-}
-
-type eventGroup struct {
-	Slug, Name, Icon, Cat string
-	Events                []eventItem
-}
-
 type catChip struct {
 	Key, Label, Icon string
 	Count            int
@@ -145,6 +135,8 @@ type overviewView struct {
 	Needs     []needItem
 	MoreNeeds []needItem
 	Groups    []eventGroup
+	Rest      []eventGroup
+	RestN     int
 	Recent    int
 	Cats      []catChip
 	Total     int
@@ -184,23 +176,7 @@ func (d *derived) overview(now time.Time) overviewView {
 	if ref.IsZero() {
 		ref = now
 	}
-	idx := map[string]int{}
-	for _, e := range site.Events {
-		if ref.Sub(e.At) > 14*24*time.Hour || e.Kind == "note" && !site.Meta.Notes {
-			continue
-		}
-		it := eventItem{Event: e, Old: ref.Sub(e.At) > 7*24*time.Hour}
-		if !it.Old {
-			v.Recent++
-		}
-		i, ok := idx[e.Project]
-		if !ok {
-			i = len(v.Groups)
-			idx[e.Project] = i
-			v.Groups = append(v.Groups, eventGroup{Slug: e.Project, Name: e.ProjectName, Icon: e.Icon, Cat: d.cat(e.Project)})
-		}
-		v.Groups[i].Events = append(v.Groups[i].Events, it)
-	}
+	v.Groups, v.Rest, v.RestN, v.Recent = sinceGroups(site.Events, ref, site.Meta.Notes, d.cat)
 	for _, c := range site.Categories {
 		if identRe.MatchString(c.Key) {
 			v.Cats = append(v.Cats, catChip{Key: c.Key, Label: c.Label, Icon: c.Icon, Count: c.Count})

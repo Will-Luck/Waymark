@@ -377,9 +377,17 @@ func BuildProject(env Env, in Input) Built {
 	// Probes. A homepage probe is listed with the others, and that is all
 	// (spec ruling 3): only projects-file urls feed the tier and Fix.
 	probeUp := false
+	// tierPending: whether the project is Live is not known yet. A
+	// projects-file probe has no result (the first pass since start has not
+	// reached it), or a probe or container never seen up has failed but is
+	// not confirmed down.
+	tierPending := false
 	var downProbes []ProbeData
 	for _, pd := range in.Probes {
 		pi := model.ProbeInfo{Label: pd.Label, URL: pd.URL, ProbeURL: pd.ProbeURL, History: pd.History, Homepage: pd.Homepage}
+		if pd.Last == nil && !pd.Homepage {
+			tierPending = true
+		}
 		if pd.Last != nil && pd.Last.Refused {
 			// Not checked (a homepage at a local or private address): neither
 			// up nor down, and nothing else follows from it.
@@ -389,10 +397,21 @@ func BuildProject(env Env, in Input) Built {
 		}
 		if pd.Last != nil {
 			pi.Up, pi.Code, pi.LatencyMS, pi.CheckedAt = pd.Last.Up, pd.Last.Code, pd.Last.LatencyMS, pd.Last.At
+			pi.Unconfirmed = !pd.Last.Up && !probeConfirmed(in.Prev, pd)
 			switch {
 			case pd.Homepage:
 			case pd.Last.Up:
 				probeUp = true
+			case pi.Unconfirmed:
+				// One failed check is not an outage yet (confirmation): no Fix.
+				// A probe stored as up stands as up for the tier; one with no
+				// stored state was never seen up, so the tier is not known yet
+				// (not fingerprinted while Quiet or Dormant).
+				if up, ok := prevProbe(in.Prev, pd.Label); ok && up {
+					probeUp = true
+				} else {
+					tierPending = true
+				}
 			default:
 				downProbes = append(downProbes, pd)
 			}
@@ -402,6 +421,24 @@ func BuildProject(env Env, in Input) Built {
 	}
 
 	since := downSinceFor(in, primaryC, downProbes)
+	// A container seen not running for under ContainerConfirmAfter is
+	// unconfirmed: no Fix, no tier change and no event yet; the page says it
+	// is checking again.
+	containerUnconfirmed := containerDown && since.containerUnconfirmed
+	// wasRunning: the stored state says it ran, so it stands as running for
+	// the tier meanwhile. One never seen running leaves the tier unknown.
+	wasRunning := false
+	if containerUnconfirmed {
+		containerDown = false
+		if dep != nil {
+			dep.Unconfirmed = true
+		}
+		prev := in.Prev
+		wasRunning = prev != nil && prev.ContainerName == primaryC.Name && prev.ContainerState != nil && *prev.ContainerState == "running"
+		if !wasRunning {
+			tierPending = true
+		}
+	}
 
 	// Tier. Before the repo list is read the project's commits are unknown:
 	// the tier is shown, but not fingerprinted (no event when the forge answers).
@@ -409,7 +446,7 @@ func BuildProject(env Env, in Input) Built {
 	tierKnown := in.GiteaKnown || fromNotes || rp.Retired
 	p.Tier, p.TierReason = Tier(TierInput{
 		Retired: rp.Retired, RepoArchived: archived, Hold: rp.Hold, LastCommit: tierCommit,
-		Running: running, ProbeUp: probeUp, CommitsUnknown: !tierKnown, FromNotes: fromNotes, Loc: loc, Forge: p.Forge,
+		Running: running || wasRunning, ProbeUp: probeUp, CommitsUnknown: !tierKnown, FromNotes: fromNotes, Loc: loc, Forge: p.Forge,
 	}, now)
 
 	// Hold.
@@ -557,12 +594,36 @@ func BuildProject(env Env, in Input) Built {
 
 	fp := fingerprint(p, in, primary, dep, primaryC, commitsKnown, lastCommit, lastSHA, allTimes, rels)
 	fp.NotesLabel = env.NotesLabel
-	if !tierKnown {
+	if !tierKnown || tierPending && (p.Tier == model.TierQuiet || p.Tier == model.TierDormant) {
+		// Not known yet: the primary's forge has not listed (CommitsUnknown),
+		// or a projects-file probe with no result could make it Live. Merge
+		// keeps the stored tier, so no tier event crosses the unknown.
 		fp.Tier = ""
 	}
 	if fp.ContainerState != nil {
 		cs := since.container
-		fp.ContainerSince = &cs
+		if containerUnconfirmed {
+			// Not confirmed: the stored state stands (no event), and when it
+			// was first seen not running is kept for the next look.
+			fp.ContainerState, fp.ContainerSince, fp.ContainerDownSince = nil, nil, &cs
+			if prev := in.Prev; prev != nil && prev.ContainerName == primaryC.Name {
+				fp.ContainerState, fp.ContainerSince = prev.ContainerState, prev.ContainerSince
+			}
+		} else {
+			fp.ContainerSince = &cs
+		}
+	}
+	for _, pr := range p.Probes {
+		if !pr.Unconfirmed || pr.Homepage || fp.Probes == nil {
+			continue
+		}
+		// One failed check is no change: the stored state stands, and a
+		// probe not stored yet stays unknown (nothing is emitted across it).
+		if up, ok := prevProbe(in.Prev, pr.Label); ok {
+			fp.Probes[pr.Label] = up
+		} else {
+			delete(fp.Probes, pr.Label)
+		}
 	}
 	if fp.Probes != nil && len(since.probes) > 0 {
 		fp.ProbeDown = since.probes
@@ -630,6 +691,11 @@ func signals(p model.Project, dep *model.DeployInfo, running bool, ri *model.Rep
 	}
 	if dep != nil {
 		v := dep.Version
+		// Not running but not confirmed yet: a warning that says so.
+		level, again := model.LevelAlert, ""
+		if dep.Unconfirmed {
+			level, again = model.LevelWarn, ", checking again"
+		}
 		switch {
 		case dep.Source == "fdroid" && dep.State == "published":
 			text := "On F-Droid"
@@ -646,7 +712,7 @@ func signals(p model.Project, dep *model.DeployInfo, running bool, ri *model.Rep
 				add("fdroid-index", model.LevelInfo, "circle-dashed", "F-Droid index not read", "")
 			}
 		case dep.Source == "fdroid":
-			add("deploy", model.LevelAlert, "package", "F-Droid repo "+stateWord(dep.State), "")
+			add("deploy", level, "package", "F-Droid repo "+stateWord(dep.State)+again, "")
 		case running:
 			text := "Running"
 			if v != "" {
@@ -654,13 +720,13 @@ func signals(p model.Project, dep *model.DeployInfo, running bool, ri *model.Rep
 			}
 			add("deploy", model.LevelGood, "container", text, "")
 		case dep.State == "missing":
-			add("deploy", model.LevelAlert, "container", "Container missing", "")
+			add("deploy", level, "container", "Container missing"+again, "")
 		default:
 			text := "Container " + stateWord(dep.State)
 			if v != "" {
 				text = v + " " + stateWord(dep.State)
 			}
-			add("deploy", model.LevelAlert, "container", text, "")
+			add("deploy", level, "container", text+again, "")
 		}
 		if dep.Lagging {
 			href := ""
@@ -720,9 +786,12 @@ func signals(p model.Project, dep *model.DeployInfo, running bool, ri *model.Rep
 		if urlProbes > 1 {
 			prefix = pr.Label + " "
 		}
-		if pr.Up {
+		switch {
+		case pr.Up:
 			add("probe", model.LevelGood, "activity", prefix+"up "+itoa(pr.LatencyMS)+" ms", pr.URL)
-		} else {
+		case pr.Unconfirmed:
+			add("probe", model.LevelWarn, "activity", prefix+"failed once", pr.URL)
+		default:
 			add("probe", model.LevelAlert, "activity", prefix+"down", pr.URL)
 		}
 	}
@@ -763,6 +832,10 @@ func headline(env Env, p model.Project, dep *model.DeployInfo, containerDown boo
 		// A held project is not being worked on: its hold says more than a
 		// stale red run (the CI chip still shows it).
 		return "CI is failing on " + ciDone.HeadBranch + ": " + ciDone.DisplayTitle, model.LevelAlert
+	case dep != nil && dep.Unconfirmed:
+		return containerText(env, pc) + ", checking again", model.LevelWarn
+	case heldProbe(p) != nil:
+		return heldProbe(p).Label + ": failed once, checking again", model.LevelWarn
 	case dep != nil && dep.Lagging:
 		if dep.Source == "fdroid" {
 			return dep.Latest + " is ready; F-Droid has " + dep.Version, model.LevelWarn
@@ -815,12 +888,82 @@ func containerText(env Env, pc *ContainerRef) string {
 	return s
 }
 
+// ProbeConfirmChecks is how many checks in a row must fail before a probe
+// counts as down (spec: confirmation). One failed check is unconfirmed.
+const ProbeConfirmChecks = 2
+
+// ContainerConfirmAfter is how long a container must be seen not running
+// (stopped, restarting, paused or missing) before it counts (spec:
+// confirmation).
+const ContainerConfirmAfter = 2 * time.Minute
+
+// failRun is the run of failed checks a probe's last result ends: how many
+// of its newest checks failed in a row, and when the first of them was
+// made. The last result counts once, whether or not the history holds it
+// yet (the collector keeps the result just before it writes the point).
+func failRun(pd ProbeData) (n int, first time.Time) {
+	if pd.Last == nil || pd.Last.Up || pd.Last.Refused {
+		return 0, time.Time{}
+	}
+	n, first = 1, pd.Last.At
+	for i := len(pd.History) - 1; i >= 0; i-- {
+		pt := pd.History[i]
+		if !pt.At.Before(pd.Last.At) {
+			continue // the last result itself
+		}
+		if pt.Up {
+			break
+		}
+		n, first = n+1, pt.At
+	}
+	return n, first
+}
+
+// prevProbe is a probe's stored up state, when the fingerprint has one.
+func prevProbe(prev *Fingerprint, label string) (up, ok bool) {
+	if prev == nil {
+		return false, false
+	}
+	up, ok = prev.Probes[label]
+	return up, ok
+}
+
+// probeConfirmed reports whether a failed probe counts as down: its last
+// ProbeConfirmChecks checks failed in a row, or it already counted as down
+// (the stored fingerprint says so, which also covers a history a crash cut
+// short). A homepage has no stored state: its checks alone decide.
+func probeConfirmed(prev *Fingerprint, pd ProbeData) bool {
+	if n, _ := failRun(pd); n >= ProbeConfirmChecks {
+		return true
+	}
+	if pd.Homepage {
+		return false
+	}
+	up, ok := prevProbe(prev, pd.Label)
+	return ok && !up
+}
+
+// heldProbe is the first projects-file probe whose failure is not
+// confirmed yet, or nil.
+func heldProbe(p model.Project) *model.ProbeInfo {
+	for i := range p.Probes {
+		if pr := &p.Probes[i]; pr.Unconfirmed && !pr.Homepage {
+			return pr
+		}
+	}
+	return nil
+}
+
 // downSince dates the Fix actions: when the primary container entered its
 // state and each down probe was first seen down, so the needs-you card ages
 // with the outage and the hash does not move on every poll.
 type downSince struct {
 	container time.Time
 	probes    map[string]time.Time // label -> first seen down
+	// containerUnconfirmed: the container is not running but has not been
+	// seen so for ContainerConfirmAfter yet; container is then when it was
+	// first seen not running.
+	containerUnconfirmed bool
 }
 
 // downSinceFor keeps the stored date while the state holds and starts a new
@@ -839,15 +982,30 @@ func downSinceFor(in Input, pc *ContainerRef, down []ProbeData) downSince {
 				ds.container = in.FeedAt.Add(-st.Age)
 			}
 		}
-		if prev != nil && prev.ContainerSince != nil && prev.ContainerState != nil && *prev.ContainerState == state && prev.ContainerName == pc.Name {
+		same := prev != nil && prev.ContainerName == pc.Name
+		if same && prev.ContainerSince != nil && prev.ContainerState != nil && *prev.ContainerState == state {
 			ds.container = *prev.ContainerSince
+		}
+		// Not running counts once it has been seen so for ContainerConfirmAfter
+		// by the feed's clock, from the earliest sighting (docker's age, or
+		// the first feed that showed it, kept in ContainerDownSince), or when
+		// it already counted (the stored state is not running).
+		notRunning := state != "running" && (pc.Declared || pc.C != nil)
+		counted := same && prev.ContainerState != nil && *prev.ContainerState != "running"
+		if notRunning && !counted {
+			if same && prev.ContainerDownSince != nil && prev.ContainerDownSince.Before(ds.container) {
+				ds.container = *prev.ContainerDownSince
+			}
+			ds.containerUnconfirmed = in.FeedAt.Sub(ds.container) < ContainerConfirmAfter
 		}
 	}
 	for _, d := range down {
 		if ds.probes == nil {
 			ds.probes = map[string]time.Time{}
 		}
-		at := d.Last.At
+		// From the first failed check of the run: the stored date below only
+		// covers a probe that already counted as down.
+		_, at := failRun(d)
 		if prev != nil {
 			if t, ok := prev.ProbeDown[d.Label]; ok && !t.IsZero() {
 				at = t

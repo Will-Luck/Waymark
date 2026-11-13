@@ -2993,7 +2993,7 @@
           "source": "Probe",
           "heuristic": false,
           "level": "alert",
-          "at": "2026-10-31T22:00:00Z",
+          "at": "2026-10-31T16:00:00Z",
           "href": "https://maps.example.com"
         }
       ],
@@ -3176,7 +3176,7 @@
           "at": "2026-10-31T22:00:00Z"
         }
       ],
-      "hash": "9879693f1407b12b"
+      "hash": "6f08a6334197345f"
     },
     {
       "slug": "beacon-app",
@@ -5014,18 +5014,6 @@
   ],
   "needs_you": [
     {
-      "project": "atlas",
-      "project_name": "Atlas",
-      "icon": "map",
-      "verb": "Fix",
-      "text": "Live is not answering (HTTP 503)",
-      "source": "Probe",
-      "heuristic": false,
-      "level": "alert",
-      "at": "2026-10-31T22:00:00Z",
-      "href": "https://maps.example.com"
-    },
-    {
       "project": "vault",
       "project_name": "Vault",
       "icon": "lock",
@@ -5035,6 +5023,18 @@
       "heuristic": false,
       "level": "alert",
       "at": "2026-10-31T18:59:30Z"
+    },
+    {
+      "project": "atlas",
+      "project_name": "Atlas",
+      "icon": "map",
+      "verb": "Fix",
+      "text": "Live is not answering (HTTP 503)",
+      "source": "Probe",
+      "heuristic": false,
+      "level": "alert",
+      "at": "2026-10-31T16:00:00Z",
+      "href": "https://maps.example.com"
     },
     {
       "project": "ledger",

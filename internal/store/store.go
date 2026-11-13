@@ -4,6 +4,7 @@
 package store
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -33,14 +34,18 @@ type state struct {
 }
 
 type Store struct {
-	path    string
-	mu      sync.Mutex
-	st      state
-	ids     map[string]bool
-	dirty   bool
-	changes uint64 // bumped on every change; Save clears dirty only if it held
-	warning string
-	saveMu  sync.Mutex // one Save at a time (they share the temp file)
+	path  string
+	mu    sync.Mutex
+	st    state
+	ids   map[string]bool
+	dirty bool // events or fingerprints changed since the last write
+	// probesDirty: probe points changed since the last write. Alone they wait
+	// for Due's probe interval; every write carries them.
+	probesDirty bool
+	changes     uint64    // bumped on every change; Save clears the flags only if it held
+	wroteAt     time.Time // when Save last wrote the file, by the caller's clock
+	warning     string
+	saveMu      sync.Mutex // one Save at a time (they share the temp file)
 
 	// beforeWrite, when set (tests), runs between the snapshot and the write.
 	beforeWrite func()
@@ -102,16 +107,42 @@ func (s *Store) Empty() bool {
 	return len(s.st.Fingerprints) == 0
 }
 
-// markLocked records a change; s.mu is held.
+// markLocked records a change to the events or fingerprints; s.mu is held.
 func (s *Store) markLocked() {
 	s.dirty = true
 	s.changes++
 }
 
+// markProbesLocked records a change to the probe points; s.mu is held.
+func (s *Store) markProbesLocked() {
+	s.probesDirty = true
+	s.changes++
+}
+
+// Dirty reports whether events or fingerprints changed since the last write.
+// Probe points alone do not count: see ProbesDirty and Due.
 func (s *Store) Dirty() bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.dirty
+}
+
+// ProbesDirty reports whether probe points changed since the last write.
+func (s *Store) ProbesDirty() bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.probesDirty
+}
+
+// Due reports whether a periodic save should write now: at once when events
+// or fingerprints changed, and for probe points alone once probeEvery has
+// passed since the last write (every write carries them), or when the clock
+// is behind that write (it stepped back, so the gap says nothing).
+func (s *Store) Due(now time.Time, probeEvery time.Duration) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	d := now.Sub(s.wroteAt)
+	return s.dirty || s.probesDirty && (d < 0 || d >= probeEvery)
 }
 
 // Fingerprints returns a copy of the stored fingerprints.
@@ -125,6 +156,9 @@ func (s *Store) Fingerprints() map[string]derive.Fingerprint {
 	return out
 }
 
+// SetFingerprints stores the per-project fingerprints. It marks the store
+// only when the file would change: an assemble that changes nothing (most of
+// them) leaves it clean.
 func (s *Store) SetFingerprints(m map[string]derive.Fingerprint) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -132,8 +166,22 @@ func (s *Store) SetFingerprints(m map[string]derive.Fingerprint) {
 	for k, v := range m {
 		cp[k] = v
 	}
+	same := sameJSON(s.st.Fingerprints, cp)
 	s.st.Fingerprints = cp
-	s.markLocked()
+	if !same {
+		s.markLocked()
+	}
+}
+
+// sameJSON reports whether two fingerprint maps write the same JSON, which
+// is what state.json holds: no monotonic clock reading, no json:"-" field.
+func sameJSON(a, b map[string]derive.Fingerprint) bool {
+	ja, err := json.Marshal(a)
+	if err != nil {
+		return false
+	}
+	jb, err := json.Marshal(b)
+	return err == nil && bytes.Equal(ja, jb)
 }
 
 // AddEvents stores events whose IDs are new and returns those. Events older
@@ -201,7 +249,7 @@ func (s *Store) AddProbe(key string, pt model.ProbePoint, now time.Time) {
 		start++
 	}
 	s.st.Probes[key] = append([]model.ProbePoint(nil), h[start:]...)
-	s.markLocked()
+	s.markProbesLocked()
 }
 
 // ProbeHistory is the last 24 h of a probe, oldest first (nil when unknown).
@@ -229,13 +277,13 @@ func (s *Store) PruneProbes(keep map[string]bool) {
 	for k := range s.st.Probes {
 		if !keep[k] {
 			delete(s.st.Probes, k)
-			s.markLocked()
+			s.markProbesLocked()
 		}
 	}
 }
 
 // Save writes state.json atomically. A change made while the file is being
-// written is not in it, so the store then stays dirty.
+// written is not in it, so the store then stays dirty (or probes-dirty).
 func (s *Store) Save(now time.Time) error {
 	s.saveMu.Lock()
 	defer s.saveMu.Unlock()
@@ -274,8 +322,9 @@ func (s *Store) Save(now time.Time) error {
 	}
 	s.mu.Lock()
 	if s.changes == snap {
-		s.dirty = false
+		s.dirty, s.probesDirty = false, false
 	}
+	s.wroteAt = now
 	s.mu.Unlock()
 	return nil
 }

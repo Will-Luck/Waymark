@@ -362,6 +362,8 @@
   .src-list b { color: var(--text); }
   .src-err { display: block; color: var(--alert-ink); font-family: var(--mono); font-size: 0.8rem; overflow-wrap: anywhere; }
   .src-note { display: block; color: var(--muted); font-size: 0.8rem; overflow-wrap: anywhere; }
+  .src-reload { display: flex; align-items: center; gap: 0.5rem; margin-block-start: 0.75rem; font-size: 0.92rem; }
+  .src-reload .i { color: var(--warn); }
 
   .search-btn {
     display: flex;
@@ -622,7 +624,9 @@
   .ev[data-old] { display: none; }
   .since-group:not(:has(.ev:not([hidden], [data-old]))) { display: none; }
   .since:not(:has(.ev:not([hidden], [data-old]))) { display: none; }
-  .since > .btn { margin-block-start: 0.75rem; }
+  .since-group .more { margin-block-start: 0.2rem; }
+  .since-group .more > summary { font-size: 0.86rem; padding-block: 0.1rem; }
+  .since-rest > .since-groups { margin-block-start: 0.6rem; }
 
   /* Board */
   .board-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1.5rem; margin-block-end: 0.5rem; }
@@ -751,6 +755,7 @@
   .st-good { --sc: var(--good); }
   .st-alert { --sc: var(--alert); }
   .st-live { --sc: var(--t-live); }
+  .st-warn { --sc: var(--warn); }
   .sdot { position: relative; inline-size: 0.7rem; block-size: 0.7rem; border-radius: 50%; background: var(--sc); }
   .st-good .sdot::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: inherit; animation: ping 2.6s var(--ease) infinite; }
   .kv { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0.15rem 1rem; margin-block-start: 0.6rem; font-size: 0.92rem; }
@@ -765,6 +770,7 @@
   .updown { display: inline-flex; align-items: center; gap: 0.25rem; font-weight: 700; color: var(--good); }
   .probe.down .updown { color: var(--alert-ink); }
   .probe.skipped .updown { color: var(--muted); }
+  .probe.warn .updown { color: var(--warn); }
   .arc {
     --p: var(--pv, 0);
     --ac: var(--good);
@@ -783,6 +789,7 @@
   .arc-num { position: relative; font-weight: 700; font-size: 0.78rem; line-height: 1; }
   .arc-num small { font-size: 0.75em; }
   .probe.down .arc { --ac: var(--alert); }
+  .probe.warn .arc { --ac: var(--warn); }
   .ubar { display: grid; grid-template-columns: repeat(144, minmax(0, 1fr)); gap: 1px; block-size: 1.5rem; margin-block-start: 0.75rem; }
   .u { border-radius: 1.5px; background: var(--raised); }
   .u.up { background: color-mix(in oklch, var(--good) 72%, var(--surface)); }

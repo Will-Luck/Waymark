@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-13
+
+### Changed
+
+- A probe counts as down only after 2 failed checks in a row. One failed
+  check shows as a warning, "Failed once, checking again", and gives no
+  Fix, no Needs you item, no change of state and no event, so a blip no
+  longer flaps the Needs you count or fills the activity feed. A confirmed
+  outage's Fix and down event are dated from its first failed check. The
+  uptime figure and the 24 hour bar still count every check.
+- A container that is not running (stopped, restarting, paused or missing)
+  counts only once it has been seen so for 2 minutes, by docker's own age
+  or the first feed that showed it. Until then the page says so ("Stopped,
+  checking again") and nothing else follows, so a one-minute nightly
+  restart no longer counts as Needs you. A confirmed stop's Fix and event
+  are dated from the stop.
+- "Since you last looked" stays short. A project's run of the same change
+  folds into one row with its count, such as "9 new commits" or "Live went
+  down and came back 3 times"; releases and state changes stay one row
+  each. Each project shows at most 3 rows, with the rest under "N more",
+  and the block at most 12, every project's first row before any project's
+  second. A first visit and the page without JavaScript now get this short
+  view of the last 7 days instead of every change in it.
+  A return visit counts only the changes since the last look, folded and
+  capped the same way for each project, so one busy project no longer
+  fills the list.
+
+### Fixed
+
+- `state.json` is written only when something in it changed: events and
+  fingerprints within 10 seconds as before, probe points alone at most every
+  10 minutes, and everything at shutdown. It was rewritten about twice a
+  minute, about 3.3 GB of disk writes a day for a 1 MB file, which wears an
+  SSD or SD card. A crash now loses at most 10 minutes of uptime history.
+- A restart while a forge has not listed its repos yet (Gitea starting
+  after Waymark at a host reboot, or a forge rate-limited at start) no
+  longer deletes the 24 hour probe history of the projects and homepages
+  only that list shows: probes are pruned only once every forge has listed.
+  With `include_private: false`, a project Live through its probe alone no
+  longer writes a false "Now Quiet (was Live)" and "Now Live (was Quiet)"
+  pair when the forge answers: its tier is not compared until its probe
+  has been checked again.
+- Live updates come back on their own after a deploy or a restart. When the
+  proxy answered with an error (502) while Waymark was down, every open tab
+  said "Reconnecting" for ever and kept old data until it was reloaded. It
+  now tries again after 5 seconds, then less often, at most once a minute;
+  after 2 minutes the header says "Offline, retrying" and the sources list
+  offers a Reload link.
+
 ## [0.2.1] - 2026-11-01
 
 ### Added

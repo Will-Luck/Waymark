@@ -62,6 +62,11 @@ var (
 	// A mirror pass that a rate limit cut short is read again at the first
 	// check after the limit ends, one every MirrorRetryEvery (retryMirrors).
 	MirrorRetryEvery = time.Minute
+	// ProbeSaveEvery: probe points alone are written at most this often.
+	// Events and fingerprints are written at the next SaveEvery tick, which
+	// carries the probe points too, so a crash loses at most this much of
+	// the 24 h uptime history and nothing else.
+	ProbeSaveEvery = 10 * time.Minute
 )
 
 // EventsGrace is how long after start events wait for a forge that has not
@@ -517,13 +522,26 @@ func (a *App) Run(ctx context.Context) error {
 		}
 	}()
 	wg.Wait()
-	a.save()
+	a.flush()
 	log.Printf("collectors stopped after %d assembles; state saved", a.cycles.Load())
 	return nil
 }
 
+// save is the SaveEvery tick: it writes state.json when events or
+// fingerprints changed, or when probe points alone changed and the last
+// write is ProbeSaveEvery old.
 func (a *App) save() {
-	if !a.store.Dirty() {
+	if !a.store.Due(a.now(), ProbeSaveEvery) {
+		return
+	}
+	if err := a.store.Save(a.now()); err != nil {
+		log.Printf("store: save: %v", err)
+	}
+}
+
+// flush is the write at shutdown: whatever changed, probe points included.
+func (a *App) flush() {
+	if !a.store.Dirty() && !a.store.ProbesDirty() {
 		return
 	}
 	if err := a.store.Save(a.now()); err != nil {

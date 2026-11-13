@@ -27,7 +27,7 @@
       <h2 id="pn-runs" class="panel-h">{{icon "server"}}Where it runs</h2>
       {{with $v.Deploy}}
       <div class="deploy">
-        <p class="state st-{{stateClass .State}}"><span class="sdot" aria-hidden="true"></span><b>{{stateWord .State}}</b>{{with .Container}} <span class="mono">{{.}}</span>{{end}}{{with .Where}} on {{.}}{{end}}</p>
+        <p class="state st-{{if .Unconfirmed}}warn{{else}}{{stateClass .State}}{{end}}"><span class="sdot" aria-hidden="true"></span><b>{{stateWord .State}}{{if .Unconfirmed}}, checking again{{end}}</b>{{with .Container}} <span class="mono">{{.}}</span>{{end}}{{with .Where}} on {{.}}{{end}}</p>
         <dl class="kv">
           {{with .Status}}<dt>Status</dt><dd>{{.}}</dd>{{end}}
           <dt>Version</dt><dd class="mono">{{if .Version}}{{.Version}}{{else}}unknown{{end}}</dd>
@@ -41,11 +41,11 @@
         <p><b>{{.Label}}</b> <span class="updown">{{icon "circle-slash"}}Not probed</span></p>
         <p class="muted small"><a href="{{.URL}}" rel="noopener">{{.URL}}</a>, {{.NotProbed}}</p>
       </div>{{else}}
-      <div class="probe {{if .Up}}up{{else}}down{{end}}">
+      <div class="probe {{if .Up}}up{{else if .Unconfirmed}}warn{{else}}down{{end}}">
         <div class="probe-top">
           <span class="arc" data-pct="{{pctf .UptimePct}}" role="img" aria-label="{{.UptimePct}}% up in the last 24 hours"><span class="arc-num">{{.UptimePct}}<small>%</small></span></span>
           <div class="probe-text">
-            <p><b>{{.Label}}</b> <span class="updown">{{if .Up}}{{icon "check"}}Up{{else}}{{icon "octagon-alert"}}Down{{end}}</span>{{if .Up}} <span class="mono">{{.LatencyMS}} ms</span>{{else if .Code}} <span class="mono">HTTP {{.Code}}</span>{{end}}</p>
+            <p><b>{{.Label}}</b> <span class="updown">{{if .Up}}{{icon "check"}}Up{{else if .Unconfirmed}}{{icon "triangle-alert"}}Failed once, checking again{{else}}{{icon "octagon-alert"}}Down{{end}}</span>{{if .Up}} <span class="mono">{{.LatencyMS}} ms</span>{{else if .Code}} <span class="mono">HTTP {{.Code}}</span>{{end}}</p>
             <p class="muted small"><a href="{{.URL}}" rel="noopener">{{.URL}}</a>, checked {{ago .CheckedAt}}</p>
           </div>
         </div>
